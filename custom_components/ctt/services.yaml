@@ -1,0 +1,15 @@
+track_parcel:
+  fields:
+    tracking_code:
+      required: true
+      example: "RR123456785PT"
+      selector:
+        text:
+
+untrack_parcel:
+  fields:
+    tracking_code:
+      required: true
+      example: "RR123456785PT"
+      selector:
+        text:

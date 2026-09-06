@@ -1,0 +1,152 @@
+{
+  "title": "CTT",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar os CTT",
+        "description": "O rastreio dos CTT não precisa de conta nem de código postal — o hub é criado de imediato. Adicione encomendas depois através das opções da integração ou do serviço `ctt.track_parcel`."
+      }
+    },
+    "abort": {
+      "already_configured": "Os CTT já estão configurados."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções dos CTT",
+        "menu_options": {
+          "parcels": "Encomendas",
+          "settings": "Definições"
+        },
+        "sections": {
+          "parcels": {
+            "name": "Encomendas",
+            "data": {
+              "add": "Adicionar uma encomenda",
+              "remove": "Remover encomendas"
+            },
+            "data_description": {
+              "add": "Introduza um código de rastreio dos CTT para começar a segui-lo. Encontra-o na confirmação de envio ou no aviso de entrega não efetuada."
+            }
+          },
+          "delivered": {
+            "name": "Encomendas entregues",
+            "data": {
+              "delivered_filter_type": "Filtrar por",
+              "delivered_filter_amount": "Quantidade"
+            },
+            "data_description": {
+              "delivered_filter_type": "Mostrar encomendas entregues dos últimos X dias, ou limitar às X mais recentes.",
+              "delivered_filter_amount": "Número de dias ou de encomendas a mostrar."
+            }
+          },
+          "history": {
+            "name": "Histórico da encomenda",
+            "data": {
+              "include_history": "Incluir histórico de estados"
+            },
+            "data_description": {
+              "include_history": "Adiciona um atributo de histórico por encomenda com cada atualização de estado (data/hora, estado, texto original). Desativado por predefinição."
+            }
+          }
+        }
+      },
+      "parcels": {
+        "title": "Gerir encomendas",
+        "data": {
+          "tracking_codes": "Códigos de rastreio"
+        }
+      },
+      "settings": {
+        "title": "Definições",
+        "data": {
+          "delivered_filter_type": "Encomendas entregues: filtrar por",
+          "delivered_filter_amount": "Encomendas entregues: quantidade",
+          "include_history": "Incluir histórico de estados"
+        }
+      }
+    },
+    "error": {
+      "invalid_tracking_code": "Isso não parece um código de rastreio dos CTT.",
+      "already_tracked": "Essa encomenda já está a ser seguida."
+    }
+  },
+  "selector": {
+    "delivered_filter_type": {
+      "options": {
+        "days": "Dias",
+        "parcels": "Número de encomendas"
+      }
+    }
+  },
+  "services": {
+    "track_parcel": {
+      "name": "Seguir encomenda",
+      "description": "Começa a seguir uma encomenda pelo seu código de rastreio dos CTT.",
+      "fields": {
+        "tracking_code": {
+          "name": "Código de rastreio",
+          "description": "O código de rastreio dos CTT."
+        }
+      }
+    },
+    "untrack_parcel": {
+      "name": "Deixar de seguir encomenda",
+      "description": "Deixa de seguir uma encomenda pelo seu código de rastreio dos CTT.",
+      "fields": {
+        "tracking_code": {
+          "name": "Código de rastreio",
+          "description": "O código de rastreio dos CTT a deixar de seguir."
+        }
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "parcel_registered": "Uma encomenda foi registada",
+      "parcel_status_changed": "O estado de uma encomenda mudou",
+      "parcel_delivered": "Uma encomenda foi entregue",
+      "parcel_delivery_time_changed": "A hora de entrega prevista de uma encomenda mudou"
+    }
+  },
+  "entity": {
+    "button": {
+      "refresh": {
+        "name": "Atualizar"
+      }
+    },
+    "calendar": {
+      "deliveries": {
+        "name": "Entregas"
+      }
+    },
+    "sensor": {
+      "incoming_parcels": {
+        "name": "Encomendas a caminho",
+        "unit_of_measurement": "encomendas"
+      },
+      "next_delivery": {
+        "name": "Próxima entrega"
+      },
+      "en_route_to_pickup_point": {
+        "name": "A caminho do ponto de recolha",
+        "unit_of_measurement": "encomendas"
+      },
+      "awaiting_pickup": {
+        "name": "Pronta para recolha",
+        "unit_of_measurement": "encomendas"
+      },
+      "delivered_parcels": {
+        "name": "Encomendas entregues",
+        "unit_of_measurement": "encomendas"
+      },
+      "last_update": {
+        "name": "Última atualização com sucesso"
+      },
+      "parcel": {
+        "name": "Encomenda {barcode}"
+      }
+    }
+  }
+}
