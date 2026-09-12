@@ -22,12 +22,12 @@ def test_normalize_tracking_code_strips_and_uppercases():
     assert normalize_tracking_code(None) == ""
 
 
-def test_valid_tracking_code_bounds():
+def test_valid_tracking_code_accepts_any_non_empty_code():
     assert valid_tracking_code("RR999999999PT")
-    assert not valid_tracking_code("ABC")  # too short
-    assert not valid_tracking_code("RR99999999PT")  # one digit short
     # A German-issued code is still a valid CTT tracking number.
     assert valid_tracking_code("LW100000004DE")
+    assert valid_tracking_code("not a real shape at all")
+    assert not valid_tracking_code("")
 
 
 async def test_user_flow_creates_hub_without_input(hass):
@@ -105,14 +105,16 @@ async def test_options_add_code_with_separators(hass):
     assert result["data"][CONF_PARCELS] == [{CONF_TRACKING_CODE: "RR999999999PT"}]
 
 
-async def test_options_add_invalid_tracking_code(hass):
+async def test_options_accepts_code_in_any_shape(hass):
+    """A code that doesn't match CTT's guessed UPU S10 shape is still accepted."""
     entry = _hub([])
     entry.add_to_hass(hass)
     result = await _open_options_step(hass, entry, "parcels")
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"tracking_codes": ["abc"]}
     )
-    assert result["errors"]["base"] == "invalid_tracking_code"
+    assert result["type"] == "create_entry"
+    assert result["data"][CONF_PARCELS] == [{CONF_TRACKING_CODE: "ABC"}]
 
 
 async def test_options_de_duplicates_tracking_codes(hass):

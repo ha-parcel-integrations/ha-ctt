@@ -88,11 +88,13 @@ comes from the *event* (`StateId` 14's `Local`), never from the top-level
 `IsDeliveryPoint`/`IsLocker` flags — both were `false` on real parcels that
 genuinely sat at a CTT shop.
 
-**Tracking-code format is provisional.** All four real codes are UPU S10
-(`^[A-Z]{2}\d{9}[A-Z]{2}$`), but that is four samples, one of them a
-German-issued code CTT still tracks. Widen the regex on the first issue
-report showing a genuine non-S10 code, rather than defending the current
-pattern.
+**Tracking-code format is not validated client-side.** All four real codes
+seen so far are UPU S10 (`^[A-Z]{2}\d{9}[A-Z]{2}$`), one of them a
+German-issued code CTT still tracks — but four samples were never enough to
+defend a regex, and CTT's own backend clearly handles other shapes
+internally (one real parcel carried a 25-digit RelabelObjectCode).
+`config_flow.valid_tracking_code` now accepts any non-empty code; an
+unrecognized one simply comes back "not found" on the next poll.
 
 **API mechanics go in the private research notes, NOT here** — the endpoint,
 the two-step session bootstrap, the version-token derivation, the status

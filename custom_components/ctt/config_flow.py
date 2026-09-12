@@ -30,17 +30,6 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# All four real codes seen so far are UPU S10 (two letters, nine digits, two
-# letters) — including one German-issued code CTT still tracks, so the
-# country suffix must not be pinned to PT. This is the one decision in the
-# build made on four samples; widen it on the first issue report that shows
-# a non-S10 code CTT genuinely accepts, rather than defending it. (CTT
-# clearly handles non-S10 codes internally too — one real parcel carried a
-# 25-digit RelabelObjectCode — but nothing has yet proven a *user-facing*
-# code in a different shape.)
-_TRACKING_CODE_RE = re.compile(r"^[A-Z]{2}\d{9}[A-Z]{2}$")
-
-
 def normalize_tracking_code(value: str) -> str:
     """Return the tracking code upper-cased with separators stripped.
 
@@ -52,8 +41,8 @@ def normalize_tracking_code(value: str) -> str:
 
 
 def valid_tracking_code(value: str) -> bool:
-    """Whether ``value`` looks like a CTT tracking code."""
-    return bool(_TRACKING_CODE_RE.match(value))
+    """Accept every non-empty code; CTT's real formats vary too much to gate on a guessed shape."""
+    return bool(value)
 
 
 def _current_parcels(entry: ConfigEntry) -> list[dict[str, str]]:
