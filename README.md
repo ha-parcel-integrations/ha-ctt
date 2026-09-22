@@ -82,9 +82,27 @@ Open **Configure** on the integration entry:
 | Parcel history | Include status history | off | Adds a `history` attribute per parcel with each status update. |
 
 Polling isn't one of these settings: the integration polls on a dynamic,
-status-driven schedule (quiet overnight window, faster when a parcel is out
-for delivery, stopped entirely once nothing is left to track) with nothing to
-configure. See [CLAUDE.md](CLAUDE.md) for the details.
+status-driven schedule with nothing to configure.
+
+## Dynamic polling
+
+Polling isn't a setting here — the integration adjusts its own cadence to
+what your tracked parcels are actually doing:
+
+- **Quiet hours** — no polling between 00:00–06:00 local time, aside from one
+  catch-up check at each end of that window (around midnight and around 6
+  AM), so an overnight update is never missed.
+- **Hot (every 15 minutes)** — while any tracked parcel is out for delivery
+  today, starting an hour before its delivery window opens (or immediately if
+  no window is known yet — this is the fallback that fires in practice for
+  CTT, whose anonymous-caller session never reports a delivery window at
+  all).
+- **Normal (every 45 minutes)** — for anything else still on its way.
+- **Fully paused** — once every tracked parcel has been delivered, or nothing
+  is tracked at all, polling stops until you add a parcel back (adding one
+  always triggers an immediate check, regardless of the pause).
+- A small, fixed per-hub offset is added on top, so not every CTT hub out
+  there polls at exactly the same second.
 
 ## Removal
 
