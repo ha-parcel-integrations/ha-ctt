@@ -102,6 +102,13 @@ def test_en_route_and_awaiting_pickup_split():
     assert awaiting._parcels()[0]["barcode"] == "B"
 
 
+def test_awaiting_pickup_counts_rerouted_parcel_without_pickup_flag():
+    rerouted = _parcel("REROUTED", status=ParcelStatus.AT_PICKUP_POINT)
+    sensor = CTTAwaitingPickupSensor(_coordinator([rerouted, _parcel("HOME")]), _entry())
+    assert sensor.native_value == 1
+    assert sensor.extra_state_attributes["parcels"] == [rerouted]
+
+
 def test_delivered_sensor():
     coordinator = _coordinator([], delivered=[_parcel("D", status=ParcelStatus.DELIVERED)])
     sensor = CTTDeliveredParcelsSensor(coordinator, _entry())
