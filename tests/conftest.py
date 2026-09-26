@@ -19,9 +19,10 @@ def reset_one_shot_warnings():
     test's one-shot-warning assertion would depend on which test already
     triggered that status code first.
     """
-    from custom_components.ctt import parcels
+    from custom_components.ctt import ctt, express
 
-    parcels._unmapped_statuses_logged.clear()
+    ctt._unmapped_statuses_logged.clear()
+    express._unmapped_statuses_logged.clear()
     yield
 
 

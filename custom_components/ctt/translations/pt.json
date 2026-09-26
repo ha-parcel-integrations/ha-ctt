@@ -1,20 +1,20 @@
 {
-  "title": "CTT",
+  "title": "CTT (Express)",
   "config": {
     "step": {
       "user": {
-        "title": "Configurar os CTT",
-        "description": "O rastreio dos CTT não precisa de conta nem de código postal — o hub é criado de imediato. Adicione encomendas depois através das opções da integração ou do serviço `ctt.track_parcel`."
+        "title": "Configurar CTT (Express)",
+        "description": "O rastreio CTT (Portugal) e CTT Express (Espanha) não precisa de conta nem de código postal — o hub é criado de imediato. Adicione encomendas depois através das opções da integração ou do serviço `ctt.track_parcel`."
       }
     },
     "abort": {
-      "already_configured": "Os CTT já estão configurados."
+      "already_configured": "CTT (Express) já está configurado."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opções dos CTT",
+        "title": "Opções de CTT (Express)",
         "menu_options": {
           "parcels": "Encomendas",
           "settings": "Definições"
@@ -27,7 +27,7 @@
               "remove": "Remover encomendas"
             },
             "data_description": {
-              "add": "Introduza um código de rastreio dos CTT para começar a segui-lo. Encontra-o na confirmação de envio ou no aviso de entrega não efetuada."
+              "add": "Introduza um código de rastreio CTT (Portugal) ou CTT Express (Espanha) para começar a segui-lo. Encontra-o na confirmação de envio ou no aviso de entrega não efetuada."
             }
           },
           "delivered": {
@@ -68,7 +68,7 @@
       }
     },
     "error": {
-      "invalid_tracking_code": "Isso não parece um código de rastreio dos CTT.",
+      "invalid_tracking_code": "Isso não parece um código de rastreio CTT (Portugal) ou CTT Express (Espanha).",
       "already_tracked": "Essa encomenda já está a ser seguida."
     }
   },

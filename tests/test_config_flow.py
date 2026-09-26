@@ -36,7 +36,7 @@ async def test_user_flow_creates_hub_without_input(hass):
         DOMAIN, context={"source": "user"}
     )
     assert result["type"] == "create_entry"
-    assert result["title"] == "CTT"
+    assert result["title"] == "CTT (Express)"
     assert result["options"][CONF_PARCELS] == []
 
 

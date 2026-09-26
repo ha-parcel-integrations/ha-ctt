@@ -28,9 +28,9 @@ class ParcelStatus(StrEnum):
 
 PLATFORMS = [Platform.BUTTON, Platform.CALENDAR, Platform.SENSOR]
 
-# Every optional key the parcel contract defines. CAPABILITIES below must be a
-# subset of this — it exists so a typo in CAPABILITIES fails a test instead of
-# silently dropping a carrier off a table on the docs site.
+# Every optional key the parcel contract defines. Each CAPABILITIES_BY_VARIANT
+# value must be a subset of this — it exists so a typo there fails a test
+# instead of silently dropping a carrier off a table on the docs site.
 KNOWN_CAPABILITIES = frozenset(
     {"weight", "dimensions", "delivery_window", "pickup_point", "url", "history"}
 )
@@ -40,30 +40,18 @@ KNOWN_CAPABILITIES = frozenset(
 # fields but came back empty on all four real parcels captured 2026-09-06.
 # Claiming ``delivery_window`` on that evidence would put a wrong column on
 # the docs site — revisit if a future parcel ever populates them.
-CAPABILITIES = frozenset({"pickup_point", "url", "history"})
-
-# If this carrier ever grows a second backend with a genuinely different
-# payload shape (a country-specific API, not just a config option), replace
-# the single CAPABILITIES above with a CAPABILITIES_BY_VARIANT dict instead:
-#
-#   CAPABILITIES_BY_VARIANT = {
-#       "Germany": frozenset({"pickup_point", "url", "history"}),
-#       "Other": frozenset({"weight", "dimensions", "delivery_window",
-#                            "pickup_point", "url", "history"}),
-#   }
-#
-# Key order is display order on the docs site's comparison table; label each
-# key exactly as the carrier's own country/backend selector does. The docs
-# site's generator accepts either shape — don't declare both. Do not add this
-# preemptively: a single-backend carrier (the common case) keeps the flat
-# CAPABILITIES above.
+# The variant is picked per parcel by the tracking code's shape, not by a setting.
+CAPABILITIES_BY_VARIANT = {
+    "CTT": frozenset({"pickup_point", "url", "history"}),
+    "CTT Express": frozenset({"delivery_window", "pickup_point", "url", "history"}),
+}
 
 # ``TRACKING_API_URL`` is CTT's OutSystems data action — POST, not GET, the
 # tracking code goes in the request body (not this URL), and the full session
-# bootstrap / version-token mechanics live in api.py, the one module that
+# bootstrap / version-token mechanics live in ctt.py, the one module that
 # actually calls it. It always answers ``200`` — including for an unknown
 # code — so ``Found: false`` inside the body is the semantic-404, and (this is
-# the trap) it is *also* what a CTT-side outage looks like; api.py's
+# the trap) it is *also* what a CTT-side outage looks like; ctt.py's
 # maintenance check is what tells the two apart.
 #
 # ``TRACKING_URL`` deliberately points at the legacy ``www.ctt.pt`` page
@@ -78,6 +66,36 @@ TRACKING_URL = (
     "https://www.ctt.pt/feapl_2/app/open/objectSearch/objectSearch.jspx"
     "?objects={tracking_code}"
 )
+
+EXPRESS_TRACKING_API_URL = "https://wct.cttexpress.com/p_track_redis_v2.php"
+EXPRESS_TRACKING_URL = (
+    "https://www.cttexpress.com/localizador-de-envios/?sc={tracking_code}"
+)
+
+# A plain aiohttp UA is refused by Cloudflare (error 1010) before it ever
+# reaches OutSystems — this string only needs to look like a browser, not be
+# any particular one.
+BROWSER_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+)
+
+
+class CTTApiError(Exception):
+    """Raised when a CTT API call returns an unexpected response."""
+
+    def __init__(
+        self,
+        detail: str,
+        *,
+        status_code: int | None = None,
+        retry_after: float | None = None,
+    ) -> None:
+        """Store the status code and the ``Retry-After`` header, if any."""
+        super().__init__(f"CTT API request failed: {detail}")
+        self.detail = detail
+        self.status_code = status_code
+        self.retry_after = retry_after
 
 # Tracked parcels live in the config entry options as a list of
 # ``{tracking_code}`` dicts — this carrier has no account or parcel feed, so the

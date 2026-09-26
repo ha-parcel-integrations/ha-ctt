@@ -1,6 +1,6 @@
 """Tests for the CTT coordinator: fetching, caching and events.
 
-The parcel mapping itself is covered by ``test_parcels.py``.
+The parcel mapping itself is covered by ``test_ctt.py`` and ``test_express.py``.
 """
 from unittest.mock import AsyncMock
 
@@ -18,6 +18,7 @@ from custom_components.ctt.const import (
 )
 from custom_components.ctt.coordinator import CTTCoordinator
 
+from .express_payloads import EXPRESS_CODE, delivered_history, pickup_history
 from .payloads import (
     ACTIVE_CODE,
     DELIVERED_CODE,
@@ -202,6 +203,85 @@ async def test_cache_only_poll_does_not_stamp_last_success(hass):
     await coordinator._async_update_data()  # served from cache
     assert coordinator.last_success_time == stamp
 
+
+
+# ---------------------------------------------------------------------------
+# two backends in one entry — the code's shape picks the normaliser
+# ---------------------------------------------------------------------------
+
+
+async def test_update_merges_ctt_and_express_parcels(hass):
+    entry = _entry_with(
+        [{CONF_TRACKING_CODE: ACTIVE_CODE}, {CONF_TRACKING_CODE: EXPRESS_CODE}]
+    )
+    entry.add_to_hass(hass)
+    client = AsyncMock()
+    client.async_get_parcel.side_effect = lambda code: (
+        active_sample() if code == ACTIVE_CODE else pickup_history()
+    )
+    coordinator = CTTCoordinator(hass, client, entry)
+
+    data = await coordinator._async_update_data()
+
+    carriers = {parcel["barcode"]: parcel["carrier"] for parcel in data}
+    assert carriers == {ACTIVE_CODE: "CTT", EXPRESS_CODE: "CTT Express"}
+
+
+async def test_update_express_result_never_gets_a_ctt_key(hass):
+    entry = _entry_with([{CONF_TRACKING_CODE: EXPRESS_CODE}])
+    entry.add_to_hass(hass)
+    client = AsyncMock()
+    client.async_get_parcel.return_value = delivered_history()
+    coordinator = CTTCoordinator(hass, client, entry)
+
+    await coordinator._async_update_data()
+
+    assert "ObjectCode" not in coordinator._raw_cache[EXPRESS_CODE]
+    assert coordinator.delivered[0]["barcode"] == EXPRESS_CODE
+
+
+async def test_update_express_not_found_shows_pending_placeholder(hass):
+    entry = _entry_with([{CONF_TRACKING_CODE: EXPRESS_CODE}])
+    entry.add_to_hass(hass)
+    client = AsyncMock()
+    client.async_get_parcel.return_value = None
+    coordinator = CTTCoordinator(hass, client, entry)
+
+    data = await coordinator._async_update_data()
+
+    assert data[0]["carrier"] == "CTT Express"
+    assert data[0]["barcode"] == EXPRESS_CODE
+    assert data[0]["status"] == ParcelStatus.UNKNOWN
+    assert data[0]["raw"] == {}
+
+
+async def test_update_express_keeps_cached_payload_on_error(hass):
+    entry = _entry_with([{CONF_TRACKING_CODE: EXPRESS_CODE}])
+    entry.add_to_hass(hass)
+    client = AsyncMock()
+    client.async_get_parcel.return_value = delivered_history()
+    coordinator = CTTCoordinator(hass, client, entry)
+    await coordinator._async_update_data()
+
+    client.async_get_parcel.side_effect = CTTApiError("HTTP 500")
+    await coordinator._async_update_data()
+    assert coordinator.delivered[0]["carrier"] == "CTT Express"
+
+
+async def test_update_express_rate_limit_backs_off(hass):
+    from homeassistant.helpers.update_coordinator import UpdateFailed
+
+    entry = _entry_with([{CONF_TRACKING_CODE: EXPRESS_CODE}])
+    entry.add_to_hass(hass)
+    client = AsyncMock()
+    client.async_get_parcel.side_effect = CTTApiError(
+        "HTTP 429", status_code=429, retry_after=90
+    )
+    coordinator = CTTCoordinator(hass, client, entry)
+
+    with pytest.raises(UpdateFailed) as excinfo:
+        await coordinator._async_update_data()
+    assert excinfo.value.retry_after == 90
 
 # ---------------------------------------------------------------------------
 # events

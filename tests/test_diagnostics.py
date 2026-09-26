@@ -67,3 +67,45 @@ async def test_diagnostics_reports_suspended_polling(hass):
         "update_interval_seconds": None,
         "suspended": True,
     }
+
+
+async def test_diagnostics_redacts_a_ctt_express_record(hass):
+    """Free event text and pickup addresses can carry names."""
+    entry = MagicMock()
+    entry.options = {"parcels": [{"tracking_code": "0000000000000000000001"}]}
+    entry.runtime_data.coordinator.current_tier_minutes = 15
+    entry.runtime_data.coordinator.update_interval = timedelta(minutes=15)
+    entry.runtime_data.coordinator.data = [
+        {
+            "barcode": "0000000000000000000001",
+            "url": "https://example.invalid/?sc=0000000000000000000001",
+            "status": "at_pickup_point",
+            "raw": {
+                "item_code": "0000000000000000000001001",
+                "events": [
+                    {
+                        "code": "2310",
+                        "type": "STATUS",
+                        "description": "Disponible",
+                        "event_date": "2026-09-02T10:00:00+02:00",
+                        "detail": {"delivery_location": "Calle Ejemplo 1"},
+                    }
+                ],
+            },
+        }
+    ]
+    entry.runtime_data.coordinator.delivered = []
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    parcel = result["incoming"][0]
+    assert parcel["barcode"] == "**REDACTED**"
+    assert parcel["url"] == "**REDACTED**"
+    assert parcel["raw"]["item_code"] == "**REDACTED**"
+    event = parcel["raw"]["events"][0]
+    assert event["detail"] == "**REDACTED**"
+    assert event["description"] == "**REDACTED**"
+    assert event["event_date"] == "**REDACTED**"
+    # the code and type are what a bug report needs to map a status
+    assert event["code"] == "2310"
+    assert event["type"] == "STATUS"

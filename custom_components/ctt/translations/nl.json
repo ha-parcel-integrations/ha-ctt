@@ -1,20 +1,20 @@
 {
-  "title": "CTT",
+  "title": "CTT (Express)",
   "config": {
     "step": {
       "user": {
-        "title": "CTT instellen",
-        "description": "CTT-tracking heeft geen account of postcode nodig — de hub wordt direct aangemaakt. Pakketten voeg je daarna toe via de integratie-opties of de service `ctt.track_parcel`."
+        "title": "CTT (Express) instellen",
+        "description": "CTT (Portugal)- en CTT Express (Spanje)-tracking hebben geen account of postcode nodig — de hub wordt direct aangemaakt. Pakketten voeg je daarna toe via de integratie-opties of de service `ctt.track_parcel`."
       }
     },
     "abort": {
-      "already_configured": "CTT is al ingesteld."
+      "already_configured": "CTT (Express) is al ingesteld."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "CTT-opties",
+        "title": "CTT (Express)-opties",
         "menu_options": {
           "parcels": "Pakketten",
           "settings": "Instellingen"
@@ -27,7 +27,7 @@
               "remove": "Pakketten verwijderen"
             },
             "data_description": {
-              "add": "Voer een CTT-trackingcode in om het pakket te volgen. Je vindt de code op de verzendbevestiging of het niet-thuiskaartje."
+              "add": "Voer een CTT (Portugal)- of CTT Express (Spanje)-trackingcode in om het pakket te volgen. Je vindt de code op de verzendbevestiging of het niet-thuiskaartje."
             }
           },
           "delivered": {
@@ -68,7 +68,7 @@
       }
     },
     "error": {
-      "invalid_tracking_code": "Dit lijkt geen CTT-trackingcode.",
+      "invalid_tracking_code": "Dit lijkt geen CTT (Portugal)- of CTT Express (Spanje)-trackingcode.",
       "already_tracked": "Dit pakket wordt al gevolgd."
     }
   },

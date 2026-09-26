@@ -12,7 +12,7 @@ from . import CTTConfigEntry
 # identifies a person, an address or a specific parcel. Over-redacting is
 # cheap; under-redacting leaks a user's home address into a GitHub thread.
 #
-# CTT's own payload names, on top of the canonical fields we publish
+# Both trackers' own payload names, on top of the canonical fields we publish
 # ourselves. The object code is included: it dereferences everything else on
 # this record, even for an anonymous caller.
 TO_REDACT = {
@@ -40,6 +40,20 @@ TO_REDACT = {
     "Sender",
     "SenderEmail",
     "ClientReference",
+    # CTT Express payload fields — free event text and pickup addresses can
+    # carry names, so every ``detail`` value goes too.
+    "item_code",
+    "description",
+    "source",
+    "event_date",
+    "detail",
+    "event_courier_code",
+    "item_event_datetime",
+    "item_event_text",
+    "External_event_text",
+    "incident_type_name",
+    "delivery_location",
+    "delivery_date",
 }
 
 

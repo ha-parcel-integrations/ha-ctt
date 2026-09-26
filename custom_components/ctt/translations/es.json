@@ -1,0 +1,152 @@
+{
+  "title": "CTT (Express)",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar CTT (Express)",
+        "description": "El seguimiento de CTT (Portugal) y CTT Express (España) no necesita cuenta ni código postal: el hub se crea al instante. Añade envíos después desde las opciones de la integración o con el servicio `ctt.track_parcel`."
+      }
+    },
+    "abort": {
+      "already_configured": "CTT (Express) ya está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de CTT (Express)",
+        "menu_options": {
+          "parcels": "Envíos",
+          "settings": "Ajustes"
+        },
+        "sections": {
+          "parcels": {
+            "name": "Envíos",
+            "data": {
+              "add": "Añadir un envío",
+              "remove": "Eliminar envíos"
+            },
+            "data_description": {
+              "add": "Introduce un código de seguimiento de CTT (Portugal) o CTT Express (España) para empezar a seguirlo. Lo encontrarás en la confirmación de envío o en el aviso de entrega fallida."
+            }
+          },
+          "delivered": {
+            "name": "Envíos entregados",
+            "data": {
+              "delivered_filter_type": "Filtrar por",
+              "delivered_filter_amount": "Cantidad"
+            },
+            "data_description": {
+              "delivered_filter_type": "Muestra los envíos entregados de los últimos X días o limita a los X más recientes.",
+              "delivered_filter_amount": "Número de días o de envíos que se muestran."
+            }
+          },
+          "history": {
+            "name": "Historial del envío",
+            "data": {
+              "include_history": "Incluir historial de estados"
+            },
+            "data_description": {
+              "include_history": "Añade a cada envío un atributo de historial con cada actualización de estado (fecha, estado, texto original). Desactivado por defecto."
+            }
+          }
+        }
+      },
+      "parcels": {
+        "title": "Gestionar envíos",
+        "data": {
+          "tracking_codes": "Códigos de seguimiento"
+        }
+      },
+      "settings": {
+        "title": "Ajustes",
+        "data": {
+          "delivered_filter_type": "Envíos entregados: filtrar por",
+          "delivered_filter_amount": "Envíos entregados: cantidad",
+          "include_history": "Incluir historial de estados"
+        }
+      }
+    },
+    "error": {
+      "invalid_tracking_code": "No parece un código de seguimiento de CTT (Portugal) o CTT Express (España).",
+      "already_tracked": "Ese envío ya se está siguiendo."
+    }
+  },
+  "selector": {
+    "delivered_filter_type": {
+      "options": {
+        "days": "Días",
+        "parcels": "Número de envíos"
+      }
+    }
+  },
+  "services": {
+    "track_parcel": {
+      "name": "Seguir envío",
+      "description": "Empieza a seguir un envío por su código de seguimiento de CTT.",
+      "fields": {
+        "tracking_code": {
+          "name": "Código de seguimiento",
+          "description": "El código de seguimiento de CTT."
+        }
+      }
+    },
+    "untrack_parcel": {
+      "name": "Dejar de seguir envío",
+      "description": "Deja de seguir un envío por su código de seguimiento de CTT.",
+      "fields": {
+        "tracking_code": {
+          "name": "Código de seguimiento",
+          "description": "El código de seguimiento de CTT que se deja de seguir."
+        }
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "parcel_registered": "Se ha registrado un envío",
+      "parcel_status_changed": "Ha cambiado el estado de un envío",
+      "parcel_delivered": "Se ha entregado un envío",
+      "parcel_delivery_time_changed": "Ha cambiado la hora prevista de entrega de un envío"
+    }
+  },
+  "entity": {
+    "button": {
+      "refresh": {
+        "name": "Actualizar"
+      }
+    },
+    "calendar": {
+      "deliveries": {
+        "name": "Entregas"
+      }
+    },
+    "sensor": {
+      "incoming_parcels": {
+        "name": "Envíos entrantes",
+        "unit_of_measurement": "envíos"
+      },
+      "next_delivery": {
+        "name": "Próxima entrega"
+      },
+      "en_route_to_pickup_point": {
+        "name": "En camino al punto de recogida",
+        "unit_of_measurement": "envíos"
+      },
+      "awaiting_pickup": {
+        "name": "Pendiente de recogida",
+        "unit_of_measurement": "envíos"
+      },
+      "delivered_parcels": {
+        "name": "Envíos entregados",
+        "unit_of_measurement": "envíos"
+      },
+      "last_update": {
+        "name": "Última actualización correcta"
+      },
+      "parcel": {
+        "name": "Envío {barcode}"
+      }
+    }
+  }
+}

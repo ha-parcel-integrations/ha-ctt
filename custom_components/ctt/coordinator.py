@@ -1,8 +1,8 @@
 """Coordinator for the CTT parcel tracker integration.
 
-Fetching and event firing only — the parcel mapping lives in :mod:`.parcels`.
-That split is what lets the account-based variant swap this file out without
-duplicating the mapping code.
+Fetching and event firing only — the parcel mapping lives in :mod:`.ctt` and
+:mod:`.express`. That split is what lets the account-based variant swap this
+file out without duplicating the mapping code.
 """
 from __future__ import annotations
 
@@ -33,7 +33,9 @@ from .const import (
     STAGGER_MINUTES,
     ParcelStatus,
 )
-from .parcels import apply_delivered_filter, normalize_parcel, sort_parcels_by_ts
+from .ctt import normalize_ctt_parcel
+from .express import is_express_code, normalize_express_parcel
+from .parcels import apply_delivered_filter, sort_parcels_by_ts
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -228,7 +230,7 @@ class CTTCoordinator(DataUpdateCoordinator[list[dict]]):
             return_exceptions=True,
         )
 
-        raws: list[dict] = []
+        raws: list[tuple[str, dict]] = []
         errors = 0
         retry_afters: list[float] = []
         saw_429 = False
@@ -249,22 +251,24 @@ class CTTCoordinator(DataUpdateCoordinator[list[dict]]):
                 _LOGGER.warning("CTT fetch failed for %s: %s", code, result)
                 cached = self._raw_cache.get(code)
                 if cached is not None:
-                    raws.append(cached)
+                    raws.append((code, cached))
                 continue
 
             if result is None:
                 # Unknown code, or not scanned yet. Keep prior data if we have
                 # it, otherwise show a pending placeholder so the user still
                 # sees the parcel they asked us to track.
-                raws.append(self._raw_cache.get(code) or {"ObjectCode": code})
+                placeholder = {} if is_express_code(code) else {"ObjectCode": code}
+                raws.append((code, self._raw_cache.get(code) or placeholder))
                 continue
 
             # The response's own tracking number can be missing on edge
             # payloads; fall back to the code we asked for so the sensor keeps
             # its key.
-            result.setdefault("ObjectCode", code)
+            if not is_express_code(code):
+                result.setdefault("ObjectCode", code)
             self._raw_cache[code] = result
-            raws.append(result)
+            raws.append((code, result))
 
         if saw_429:
             # A 429 anywhere in this batch means the whole poll backs off —
@@ -289,7 +293,10 @@ class CTTCoordinator(DataUpdateCoordinator[list[dict]]):
 
         include_history = self._include_history
         normalized = [
-            normalize_parcel(raw, include_history=include_history) for raw in raws
+            normalize_express_parcel(code, raw, include_history=include_history)
+            if is_express_code(code)
+            else normalize_ctt_parcel(raw, include_history=include_history)
+            for code, raw in raws
         ]
         active = [parcel for parcel in normalized if not parcel["delivered"]]
         delivered = [parcel for parcel in normalized if parcel["delivered"]]

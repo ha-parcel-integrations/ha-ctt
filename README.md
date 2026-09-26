@@ -1,4 +1,4 @@
-# CTT Parcel Tracker
+# CTT (Express) Parcel Tracker
 
 [![Release](https://img.shields.io/github/v/release/ha-parcel-integrations/ha-ctt.svg)](https://github.com/ha-parcel-integrations/ha-ctt/releases)
 [![Downloads](https://img.shields.io/github/downloads/ha-parcel-integrations/ha-ctt/total.svg)](https://github.com/ha-parcel-integrations/ha-ctt/releases)
@@ -7,7 +7,7 @@
 
 > 💬 Questions or feedback? Join the discussion on the [Home Assistant community](https://community.home-assistant.io/t/packages-postnl-dhl-nl-dpd-and-gls-parcel-integration/112433/).
 
-A custom Home Assistant integration that tracks your [CTT](https://www.ctt.pt) (Portugal's national post) parcels. No account is needed — you enter the tracking code yourself, just like on the CTT website.
+A custom Home Assistant integration that tracks CTT parcels from Portugal and CTT Express parcels from Spain. No account is needed — paste any tracking code and the integration selects the right tracker automatically.
 
 Part of the [ha-parcel-integrations](https://ha-parcel-integrations.github.io/) family: it publishes the same canonical parcel format, statuses and events as the other carrier integrations, so it plugs straight into the [Parcel Aggregator](https://github.com/ha-parcel-integrations/ha-parcel-aggregator) and cross-carrier automations.
 
@@ -33,7 +33,7 @@ Part of the [ha-parcel-integrations](https://ha-parcel-integrations.github.io/) 
 
 ## Features
 
-- Track any number of CTT parcels by tracking code — no account needed
+- Track any number of CTT (Portugal) and CTT Express (Spain) parcels by tracking code — no account needed
 - Per-parcel sensor with the canonical status (`registered` / `in_transit` / `out_for_delivery` / `delivered` / …), CTT's own status text, pickup-point detail and a tracking deep-link
 - Summary sensors: incoming parcels, next delivery, recently delivered parcels
 - `ctt.track_parcel` / `ctt.untrack_parcel` services, so a dashboard button can add a parcel
@@ -44,14 +44,21 @@ Part of the [ha-parcel-integrations](https://ha-parcel-integrations.github.io/) 
 ## Requirements
 
 - Home Assistant 2024.12 or newer
-- A CTT parcel and its tracking code (from the shipping confirmation
+- A CTT (Portugal) or CTT Express (Spain) parcel and its tracking code (from the shipping confirmation
   email or the missed-delivery card) — no account needed
 
-CTT does not expose an estimated delivery window, weight or dimensions to an
-anonymous caller, so this integration does not claim them (see
-`CAPABILITIES` in `const.py`). The **Deliveries** calendar entity still
-exists for parity with the rest of the suite, but stays empty on CTT since
-it has nothing to show without a window.
+Supported optional fields differ by tracker (see `CAPABILITIES_BY_VARIANT` in
+`const.py`):
+
+| Tracker | Supported fields |
+|---|---|
+| CTT | Pickup point, tracking URL, status history |
+| CTT Express | Delivery window, pickup point, tracking URL, status history |
+
+The CTT Express delivery window is a date only, and appears once a delivery has
+been rescheduled to a new date. CTT does not expose one at all, so the
+**Deliveries** calendar and the next-delivery sensor stay empty for CTT
+parcels.
 
 ## Installation
 
@@ -59,7 +66,7 @@ it has nothing to show without a window.
 
 1. In HACS, choose the three-dot menu → **Custom repositories**.
 2. Add `https://github.com/ha-parcel-integrations/ha-ctt` as an **Integration**.
-3. Install **CTT** and restart Home Assistant.
+3. Install **CTT (Express)** and restart Home Assistant.
 
 ### Manual
 
@@ -67,9 +74,9 @@ Copy `custom_components/ctt` into your `config/custom_components/` folder and re
 
 ## Configuration
 
-Add the integration via **Settings → Devices & Services → Add Integration → CTT**. There is nothing to fill in: the hub is created immediately (CTT tracking needs no account).
+Add the integration via **Settings → Devices & Services → Add Integration → CTT (Express)**. There is nothing to fill in: the hub is created immediately (both trackers need no account).
 
-Then add parcels via the integration's **Configure** dialog, the [`ctt.track_parcel`](#services) service, or a [dashboard button](examples/dashboards/add_parcel_card.yaml). The tracking code is on your shipping confirmation email or the missed-delivery card.
+Then add CTT (Portugal) or CTT Express (Spain) parcels via the integration's **Configure** dialog, the [`ctt.track_parcel`](#services) service, or a [dashboard button](examples/dashboards/add_parcel_card.yaml). Any code can be pasted; its shape selects the tracker.
 
 ## Options
 
@@ -106,7 +113,7 @@ what your tracked parcels are actually doing:
 
 ## Removal
 
-Standard HA removal applies: **Settings → Devices & Services → CTT → ⋮ → Delete**. Nothing is stored on CTT's side.
+Standard HA removal applies: **Settings → Devices & Services → CTT (Express) → ⋮ → Delete**. Nothing is stored on either carrier's side.
 
 ## Sensors
 
@@ -114,7 +121,7 @@ Standard HA removal applies: **Settings → Devices & Services → CTT → ⋮ �
 |---|---|
 | `sensor.ctt_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.ctt_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
-| `sensor.ctt_next_delivery` | Earliest expected delivery moment across all active parcels (always empty — CTT exposes no delivery window) |
+| `sensor.ctt_next_delivery` | Earliest expected delivery moment across active parcels when the selected tracker provides one |
 | `sensor.ctt_delivered_parcels` | Recently delivered parcels (see the retention option) |
 | `sensor.ctt_last_successful_update` | Diagnostic: when CTT was last polled successfully |
 

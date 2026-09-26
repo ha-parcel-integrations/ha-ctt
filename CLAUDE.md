@@ -51,20 +51,37 @@ This repo follows it exactly.
 
 ## Carrier-specific notes
 
-CTT is keyless but not stateless: `api.py` maintains an anonymous OutSystems
+**Two backends, routed per code.** CTT Portugal lives in `ctt.py`, CTT Express
+(Spain) in `express.py`; `api.py` is only the dispatcher, and
+`is_express_code` sends every all-digit code to CTT Express and everything else
+to CTT. There is no country or brand setting — one entry holds both kinds of
+code, and each parcel's `carrier` says which backend it came from. The
+coordinator keeps each raw next to its code so it can pick the matching
+normaliser, and never adds CTT's `ObjectCode` to a CTT Express record.
+
+**CTT Express specifics.** Not-found is an empty `200` body, so the client
+reads text and parses it itself. `events` is a list; the state is the newest
+`STATUS` event by `event_date` (sorted, never trusted in server order) and
+`MANAGEMENTS` events never set it — they only feed `planned_from`, from the
+newest revised delivery date, while the parcel is not delivered or returning.
+`barcode` is the configured code, never the tracker's own `item_code`.
+
+The rest of this section is about the CTT Portugal backend.
+
+CTT is keyless but not stateless: `ctt.py` maintains an anonymous OutSystems
 session (cookie + CSRF token, bootstrapped off an expected `403`) and two
 derived version tokens (`moduleVersion`, per-action `apiVersion`) on the
 client instance. None of the three is ever hardcoded — a stale version token
 is a "re-derive and retry once" signal from the server
 (`versionInfo.hasModuleVersionChanged`/`hasApiVersionChanged`), and a later
 `403` just means the session expired and needs a fresh bootstrap. See the
-module docstring in `api.py` for the full mechanics; the wire-level
+module docstring in `ctt.py` for the full mechanics; the wire-level
 reference (why each step exists, what was actually observed) lives in the
 private `carrier-research/ctt/api/` and is not duplicated here.
 
 **The outage trap.** CTT's `Found: false` is CTT's semantic-404, but the
 exact same shape is also what the backend returns during a genuine outage —
-confirmed live during research on 2026-09-05. `api.py` never reports a
+confirmed live during research on 2026-09-05. `ctt.py` never reports a
 not-found without first calling the sibling `DataActionCheckIPLocked`
 action and checking `IsMaintenance`; only when that is also false does
 `async_get_parcel` return `None`. A found parcel skips the check entirely —
@@ -81,8 +98,8 @@ for this — it went out for delivery, failed once, and returned to
 **Fields that are `None` on purpose.** `planned_from`/`planned_to`,
 `weight` and `dimensions` are always `None` — no observed parcel (four real
 ones, 2026-09-06) populates `DeliveryDeadlineEnd`, `DeliveryTimeSlot` or any
-weight/dimension field for an anonymous caller. `CAPABILITIES` in
-`const.py` reflects this (`{"pickup_point", "url", "history"}`) and must
+weight/dimension field for an anonymous caller. `CAPABILITIES_BY_VARIANT["CTT"]`
+in `const.py` reflects this (`{"pickup_point", "url", "history"}`) and must
 stay in agreement if a future parcel ever proves otherwise. `pickup_point`
 comes from the *event* (`StateId` 14's `Local`), never from the top-level
 `IsDeliveryPoint`/`IsLocker` flags — both were `false` on real parcels that
@@ -94,12 +111,14 @@ German-issued code CTT still tracks — but four samples were never enough to
 defend a regex, and CTT's own backend clearly handles other shapes
 internally (one real parcel carried a 25-digit RelabelObjectCode).
 `config_flow.valid_tracking_code` now accepts any non-empty code; an
-unrecognized one simply comes back "not found" on the next poll.
+unrecognized one simply comes back "not found" on the next poll. The code's
+shape is used only to route between the two backends, never to reject.
 
 **API mechanics go in the private research notes, NOT here** — the endpoint,
 the two-step session bootstrap, the version-token derivation, the status
 vocabulary and the annotated real payloads live in
-`carrier-research/ctt/api/tracking.md`, never duplicated into this repo.
+`carrier-research/ctt/api/` (`tracking.md`, `express.md`), never duplicated
+into this repo.
 
 ## Running tests
 

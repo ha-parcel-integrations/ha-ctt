@@ -1,20 +1,20 @@
 {
-  "title": "CTT",
+  "title": "CTT (Express)",
   "config": {
     "step": {
       "user": {
-        "title": "Set up CTT",
-        "description": "CTT tracking needs no account or postal code — the hub is created right away. Add parcels afterwards via the integration options or the `ctt.track_parcel` service."
+        "title": "Set up CTT (Express)",
+        "description": "CTT (Portugal) and CTT Express (Spain) tracking need no account or postal code — the hub is created right away. Add parcels afterwards via the integration options or the `ctt.track_parcel` service."
       }
     },
     "abort": {
-      "already_configured": "CTT is already set up."
+      "already_configured": "CTT (Express) is already set up."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "CTT options",
+        "title": "CTT (Express) options",
         "menu_options": {
           "parcels": "Parcels",
           "settings": "Settings"
@@ -27,7 +27,7 @@
               "remove": "Remove parcels"
             },
             "data_description": {
-              "add": "Enter a CTT tracking code to start tracking it. You find it on the shipping confirmation or the missed-delivery card."
+              "add": "Enter a CTT (Portugal) or CTT Express (Spain) tracking code to start tracking it. You find it on the shipping confirmation or the missed-delivery card."
             }
           },
           "delivered": {
@@ -68,7 +68,7 @@
       }
     },
     "error": {
-      "invalid_tracking_code": "That does not look like a CTT tracking code.",
+      "invalid_tracking_code": "That does not look like a CTT (Portugal) or CTT Express (Spain) tracking code.",
       "already_tracked": "That parcel is already being tracked."
     }
   },
