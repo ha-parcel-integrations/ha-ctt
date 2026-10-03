@@ -123,7 +123,7 @@
     },
     "sensor": {
       "incoming_parcels": {
-        "name": "Encomendas a caminho",
+        "name": "Encomendas recebidas",
         "unit_of_measurement": "encomendas"
       },
       "next_delivery": {
