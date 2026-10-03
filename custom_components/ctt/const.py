@@ -46,6 +46,13 @@ CAPABILITIES_BY_VARIANT = {
     "CTT Express": frozenset({"delivery_window", "pickup_point", "url", "history"}),
 }
 
+# Fields not confirmed yet — the docs site shows them as "awaiting data".
+# Move a field into the declaration above once a real parcel shows it.
+PENDING_CAPABILITIES_BY_VARIANT = {
+    "CTT": frozenset({"delivery_window"}),
+    "CTT Express": frozenset({"weight", "dimensions"}),
+}
+
 # ``TRACKING_API_URL`` is CTT's OutSystems data action — POST, not GET, the
 # tracking code goes in the request body (not this URL), and the full session
 # bootstrap / version-token mechanics live in ctt.py, the one module that
