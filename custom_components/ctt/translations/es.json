@@ -76,7 +76,7 @@
     "delivered_filter_type": {
       "options": {
         "days": "Días",
-        "parcels": "Número de envíos"
+        "parcels": "Número de paquetes"
       }
     }
   },
@@ -123,29 +123,29 @@
     },
     "sensor": {
       "incoming_parcels": {
-        "name": "Envíos entrantes",
-        "unit_of_measurement": "envíos"
+        "name": "Paquetes entrantes",
+        "unit_of_measurement": "paquetes"
       },
       "next_delivery": {
         "name": "Próxima entrega"
       },
       "en_route_to_pickup_point": {
         "name": "En camino al punto de recogida",
-        "unit_of_measurement": "envíos"
+        "unit_of_measurement": "paquetes"
       },
       "awaiting_pickup": {
-        "name": "Pendiente de recogida",
-        "unit_of_measurement": "envíos"
+        "name": "Listo para recoger",
+        "unit_of_measurement": "paquetes"
       },
       "delivered_parcels": {
-        "name": "Envíos entregados",
-        "unit_of_measurement": "envíos"
+        "name": "Paquetes entregados",
+        "unit_of_measurement": "paquetes"
       },
       "last_update": {
         "name": "Última actualización correcta"
       },
       "parcel": {
-        "name": "Envío {barcode}"
+        "name": "Paquete {barcode}"
       }
     }
   }
