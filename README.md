@@ -143,8 +143,8 @@ The `status` field is the carrier-agnostic enum shared by the whole integration 
 
 `returning` is part of the shared enum but CTT has no confirmed `StateId` for
 a return, a cancellation or a locker delivery yet (nine further status
-literals are known from CTT's own website code but have never been observed
-on the wire) — they arrive as `unknown` with a one-shot log line asking you
+literals are known to exist but have never been observed
+on a real parcel) — they arrive as `unknown` with a one-shot log line asking you
 to report it, rather than being guessed at.
 
 CTT's own human-readable text is always available as `raw_status`.
