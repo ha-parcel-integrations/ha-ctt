@@ -82,6 +82,7 @@ EXPRESS_TRACKING_URL = (
 # A plain aiohttp UA is refused by Cloudflare (error 1010) before it ever
 # reaches OutSystems — this string only needs to look like a browser, not be
 # any particular one.
+# suite: allow browser user-agent (Cloudflare refuses a plain client UA, per the note above)
 BROWSER_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
