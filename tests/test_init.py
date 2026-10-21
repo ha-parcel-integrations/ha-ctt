@@ -1,4 +1,5 @@
 """Tests for CTT setup and unload."""
+
 from unittest.mock import AsyncMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
@@ -6,14 +7,9 @@ from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.ctt.api import CTTApiError
-from custom_components.ctt.const import (
-    CONF_PARCELS,
-    CONF_TRACKING_CODE,
-    DOMAIN,
-)
+from custom_components.ctt.const import CONF_PARCELS, CONF_TRACKING_CODE, DOMAIN
 
-from .payloads import ACTIVE_CODE
-from .payloads import active_sample as _sample
+from .payloads import ACTIVE_CODE, active_sample as _sample
 
 OTHER_CODE = "RR888888888PT"
 

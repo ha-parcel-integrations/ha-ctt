@@ -1,4 +1,5 @@
 """Tests for the dispatcher that picks a backend per tracking code."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -7,7 +8,7 @@ from custom_components.ctt.api import CTTApiClient
 
 
 @pytest.mark.parametrize(
-    "code,backend,other",
+    ("code", "backend", "other"),
     [
         ("0000000000000000000001", "_express", "_ctt"),
         ("DW000000001PT", "_ctt", "_express"),

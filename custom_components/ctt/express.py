@@ -10,11 +10,12 @@ Contract kept for the coordinator, same as :class:`.ctt.CTTClient`:
 parcel, ``None`` for a not-found, and raises :class:`CTTApiError` for anything
 else.
 """
+
 from __future__ import annotations
 
+from datetime import date, datetime, time
 import json
 import logging
-from datetime import date, datetime, time
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -41,16 +42,16 @@ _EXPRESS_TZ = ZoneInfo("Europe/Madrid")
 # their meaning is not settled, so they arrive as `unknown` with the one-shot
 # warning until a second sighting pins them down.
 EXPRESS_STATUS_MAP: dict[str, ParcelStatus] = {
-    "0000": ParcelStatus.REGISTERED,        # pending CTT Express receipt
-    "0500": ParcelStatus.IN_TRANSIT,        # collected
-    "1000": ParcelStatus.IN_TRANSIT,        # sent
+    "0000": ParcelStatus.REGISTERED,  # pending CTT Express receipt
+    "0500": ParcelStatus.IN_TRANSIT,  # collected
+    "1000": ParcelStatus.IN_TRANSIT,  # sent
     "1500": ParcelStatus.OUT_FOR_DELIVERY,  # out for delivery
-    "1600": ParcelStatus.PROBLEM,           # delivery incident
-    "2100": ParcelStatus.DELIVERED,         # delivered
-    "2310": ParcelStatus.AT_PICKUP_POINT,   # available at a Collectt pickup point
+    "1600": ParcelStatus.PROBLEM,  # delivery incident
+    "2100": ParcelStatus.DELIVERED,  # delivered
+    "2310": ParcelStatus.AT_PICKUP_POINT,  # available at a Collectt pickup point
     "2400": ParcelStatus.OUT_FOR_DELIVERY,  # new delivery round
-    "2500": ParcelStatus.RETURNING,         # returning
-    "3900": ParcelStatus.IN_TRANSIT,        # international transit
+    "2500": ParcelStatus.RETURNING,  # returning
+    "3900": ParcelStatus.IN_TRANSIT,  # international transit
 }
 
 # Codes we have already warned about, so each unmapped one is logged only once
@@ -106,9 +107,7 @@ class CTTExpressClient:
         if payload.get("error") is not None:
             raise CTTApiError(f"tracker error: {payload['error']}")
         history = (payload.get("data") or {}).get("shipping_history")
-        if not isinstance(history, dict) or not isinstance(
-            history.get("events"), list
-        ):
+        if not isinstance(history, dict) or not isinstance(history.get("events"), list):
             raise CTTApiError("response has no shipping_history events")
         return history
 

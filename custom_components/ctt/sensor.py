@@ -1,8 +1,9 @@
 """Sensor platform for the CTT parcel tracker integration."""
+
 from __future__ import annotations
 
-import logging
 from datetime import datetime
+import logging
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -30,7 +31,6 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 0
 
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: CTTConfigEntry,
@@ -42,9 +42,7 @@ async def async_setup_entry(
     # than (too late) from this forwarded platform.
     coordinator = entry.runtime_data.coordinator
 
-    current_barcodes: set[str] = {
-        p.get("barcode", "") for p in coordinator.data or []
-    }
+    current_barcodes: set[str] = {p.get("barcode", "") for p in coordinator.data or []}
     entry_id = entry.entry_id
 
     # Remove per-parcel sensors from the registry whose barcode is no longer
@@ -66,7 +64,7 @@ async def async_setup_entry(
             and entity_entry.unique_id.startswith(f"{entry_id}_")
             and entity_entry.unique_id not in non_parcel_unique_ids
         ):
-            barcode = entity_entry.unique_id[len(f"{entry_id}_"):]
+            barcode = entity_entry.unique_id[len(f"{entry_id}_") :]
             if barcode not in current_barcodes:
                 registry.async_remove(entity_entry.entity_id)
 
@@ -75,10 +73,10 @@ async def async_setup_entry(
             coordinator, entry, async_add_entities, current_barcodes
         ),
     ]
-    for parcel in coordinator.data or []:
-        entities.append(
-            CTTParcelSensor(coordinator, entry, parcel.get("barcode", ""))
-        )
+    entities.extend(
+        CTTParcelSensor(coordinator, entry, parcel.get("barcode", ""))
+        for parcel in coordinator.data or []
+    )
     entities.append(CTTNextDeliverySensor(coordinator, entry))
     entities.append(CTTEnRouteToPickupPointSensor(coordinator, entry))
     entities.append(CTTAwaitingPickupSensor(coordinator, entry))
@@ -88,9 +86,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class CTTIncomingParcelsSensor(
-    CoordinatorEntity[CTTCoordinator], SensorEntity
-):
+class CTTIncomingParcelsSensor(CoordinatorEntity[CTTCoordinator], SensorEntity):
     """Summary sensor: count of active (not-yet-delivered) tracked parcels.
 
     Spawns a per-parcel sensor for each new barcode and removes stale ones
@@ -193,9 +189,7 @@ class CTTParcelSensor(CoordinatorEntity[CTTCoordinator], SensorEntity):
         return dict(parcel) if parcel else {}
 
 
-class CTTNextDeliverySensor(
-    CoordinatorEntity[CTTCoordinator], SensorEntity
-):
+class CTTNextDeliverySensor(CoordinatorEntity[CTTCoordinator], SensorEntity):
     """Earliest expected delivery datetime across all active parcels."""
 
     _attr_has_entity_name = True
@@ -203,9 +197,7 @@ class CTTNextDeliverySensor(
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_attribution = ATTRIBUTION
 
-    def __init__(
-        self, coordinator: CTTCoordinator, entry: ConfigEntry
-    ) -> None:
+    def __init__(self, coordinator: CTTCoordinator, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_next_delivery"
@@ -244,9 +236,7 @@ class CTTNextDeliverySensor(
         }
 
 
-class CTTEnRouteToPickupPointSensor(
-    CoordinatorEntity[CTTCoordinator], SensorEntity
-):
+class CTTEnRouteToPickupPointSensor(CoordinatorEntity[CTTCoordinator], SensorEntity):
     """Active parcels still in transit to a CTT pickup point."""
 
     _attr_has_entity_name = True
@@ -255,9 +245,7 @@ class CTTEnRouteToPickupPointSensor(
     _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"parcels"})
 
-    def __init__(
-        self, coordinator: CTTCoordinator, entry: ConfigEntry
-    ) -> None:
+    def __init__(self, coordinator: CTTCoordinator, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_en_route_to_pickup_point"
@@ -265,7 +253,8 @@ class CTTEnRouteToPickupPointSensor(
 
     def _parcels(self) -> list[dict]:
         return [
-            p for p in (self.coordinator.data or [])
+            p
+            for p in (self.coordinator.data or [])
             if p.get("pickup") and p.get("status") != ParcelStatus.AT_PICKUP_POINT
         ]
 
@@ -280,9 +269,7 @@ class CTTEnRouteToPickupPointSensor(
         return {"parcels": self._parcels()}
 
 
-class CTTAwaitingPickupSensor(
-    CoordinatorEntity[CTTCoordinator], SensorEntity
-):
+class CTTAwaitingPickupSensor(CoordinatorEntity[CTTCoordinator], SensorEntity):
     """Parcels that have arrived at a CTT pickup point and are ready to collect."""
 
     _attr_has_entity_name = True
@@ -291,9 +278,7 @@ class CTTAwaitingPickupSensor(
     _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"parcels"})
 
-    def __init__(
-        self, coordinator: CTTCoordinator, entry: ConfigEntry
-    ) -> None:
+    def __init__(self, coordinator: CTTCoordinator, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_awaiting_pickup"
@@ -301,7 +286,8 @@ class CTTAwaitingPickupSensor(
 
     def _parcels(self) -> list[dict]:
         return [
-            p for p in (self.coordinator.data or [])
+            p
+            for p in (self.coordinator.data or [])
             if p.get("status") == ParcelStatus.AT_PICKUP_POINT
         ]
 
@@ -316,9 +302,7 @@ class CTTAwaitingPickupSensor(
         return {"parcels": self._parcels()}
 
 
-class CTTDeliveredParcelsSensor(
-    CoordinatorEntity[CTTCoordinator], SensorEntity
-):
+class CTTDeliveredParcelsSensor(CoordinatorEntity[CTTCoordinator], SensorEntity):
     """Recently delivered tracked CTT parcels."""
 
     _attr_has_entity_name = True
@@ -327,9 +311,7 @@ class CTTDeliveredParcelsSensor(
     _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"parcels"})
 
-    def __init__(
-        self, coordinator: CTTCoordinator, entry: ConfigEntry
-    ) -> None:
+    def __init__(self, coordinator: CTTCoordinator, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_delivered_parcels"
@@ -346,9 +328,7 @@ class CTTDeliveredParcelsSensor(
         return {"parcels": self.coordinator.delivered}
 
 
-class CTTLastUpdateSensor(
-    CoordinatorEntity[CTTCoordinator], SensorEntity
-):
+class CTTLastUpdateSensor(CoordinatorEntity[CTTCoordinator], SensorEntity):
     """Diagnostic sensor reporting when CTT was last polled successfully."""
 
     _attr_has_entity_name = True
@@ -357,9 +337,7 @@ class CTTLastUpdateSensor(
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_attribution = ATTRIBUTION
 
-    def __init__(
-        self, coordinator: CTTCoordinator, entry: ConfigEntry
-    ) -> None:
+    def __init__(self, coordinator: CTTCoordinator, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_last_update"

@@ -6,6 +6,7 @@ tokens, and a maintenance check that turns a `Found: false` into a real
 error when the whole backend — not just the tracking code — is down. Each
 gets its own section below.
 """
+
 import json
 from unittest.mock import AsyncMock, MagicMock
 
@@ -101,7 +102,11 @@ def _version_derivation_gets() -> list:
         _ctx(
             _response(
                 200,
-                json_body={"manifest": {"urlVersions": {SCREEN_SCRIPT_PATH: SCRIPT_VERSION_TOKEN}}},
+                json_body={
+                    "manifest": {
+                        "urlVersions": {SCREEN_SCRIPT_PATH: SCRIPT_VERSION_TOKEN}
+                    }
+                },
             )
         ),
         _ctx(_response(200, text_body=SCREEN_SCRIPT_TEXT)),
@@ -110,7 +115,10 @@ def _version_derivation_gets() -> list:
 
 def _found_envelope(object_code: str = CODE) -> dict:
     return {
-        "versionInfo": {"hasModuleVersionChanged": False, "hasApiVersionChanged": False},
+        "versionInfo": {
+            "hasModuleVersionChanged": False,
+            "hasApiVersionChanged": False,
+        },
         "data": {
             "ObjectEventsFromQuery": {
                 "ObjectCode": object_code,
@@ -124,9 +132,16 @@ def _found_envelope(object_code: str = CODE) -> dict:
 
 def _not_found_envelope() -> dict:
     return {
-        "versionInfo": {"hasModuleVersionChanged": False, "hasApiVersionChanged": False},
+        "versionInfo": {
+            "hasModuleVersionChanged": False,
+            "hasApiVersionChanged": False,
+        },
         "data": {
-            "ObjectEventsFromQuery": {"ObjectCode": "", "Found": False, "Events": {"List": []}},
+            "ObjectEventsFromQuery": {
+                "ObjectCode": "",
+                "Found": False,
+                "Events": {"List": []},
+            },
             "Result": {"Success": True, "ErrorMessage": ""},
         },
     }
@@ -134,7 +149,10 @@ def _not_found_envelope() -> dict:
 
 def _maintenance_envelope(*, is_maintenance: bool) -> dict:
     return {
-        "versionInfo": {"hasModuleVersionChanged": False, "hasApiVersionChanged": False},
+        "versionInfo": {
+            "hasModuleVersionChanged": False,
+            "hasApiVersionChanged": False,
+        },
         "data": {
             "Result": {"Success": not is_maintenance, "ErrorMessage": ""},
             "IsMaintenance": is_maintenance,
@@ -171,9 +189,12 @@ async def test_get_parcel_returns_record_on_success():
     assert record["ObjectCode"] == CODE
     assert record["Found"] is True
     # tracking code goes in the request body, not the URL
-    assert session.post.call_args_list[-1].kwargs["json"]["screenData"][
-        "variables"
-    ]["ObjectCodeInput"] == CODE
+    assert (
+        session.post.call_args_list[-1].kwargs["json"]["screenData"]["variables"][
+            "ObjectCodeInput"
+        ]
+        == CODE
+    )
 
 
 async def test_second_call_reuses_the_session_and_version_tokens():
@@ -266,7 +287,9 @@ async def test_bootstrap_403_without_a_cookie_raises():
 async def test_bootstrap_cookie_without_crf_raises():
     client, _ = _client(
         _version_derivation_gets(),
-        [_ctx(_response(403, cookies={"nr2Users": _Morsel("uid%3d0")}))],  # no crf field
+        [
+            _ctx(_response(403, cookies={"nr2Users": _Morsel("uid%3d0")}))
+        ],  # no crf field
     )
 
     with pytest.raises(CTTApiError):
@@ -300,7 +323,11 @@ async def test_stale_version_token_is_rederived_and_retried_once():
     stale_envelope = {
         "versionInfo": {"hasModuleVersionChanged": False, "hasApiVersionChanged": True},
         "data": {
-            "ObjectEventsFromQuery": {"ObjectCode": "", "Found": False, "Events": {"List": []}},
+            "ObjectEventsFromQuery": {
+                "ObjectCode": "",
+                "Found": False,
+                "Events": {"List": []},
+            },
             "Result": {"Success": True, "ErrorMessage": ""},
         },
     }
@@ -309,7 +336,9 @@ async def test_stale_version_token_is_rederived_and_retried_once():
         [
             _ctx(_response(403, cookies=_bootstrap_cookie())),
             _ctx(_response(200, json_body=stale_envelope)),  # stale -> re-derive
-            _ctx(_response(200, json_body=_found_envelope())),  # retried with fresh token
+            _ctx(
+                _response(200, json_body=_found_envelope())
+            ),  # retried with fresh token
         ],
     )
 
@@ -404,7 +433,11 @@ async def test_script_without_the_action_literal_raises():
             _ctx(
                 _response(
                     200,
-                    json_body={"manifest": {"urlVersions": {SCREEN_SCRIPT_PATH: SCRIPT_VERSION_TOKEN}}},
+                    json_body={
+                        "manifest": {
+                            "urlVersions": {SCREEN_SCRIPT_PATH: SCRIPT_VERSION_TOKEN}
+                        }
+                    },
                 )
             ),
             _ctx(_response(200, text_body="no callDataAction here")),
@@ -428,7 +461,7 @@ def test_track_action_url_targets_the_right_screen():
 
 
 @pytest.mark.parametrize(
-    "state_id,expected",
+    ("state_id", "expected"),
     [
         (1, ParcelStatus.REGISTERED),
         (2, ParcelStatus.IN_TRANSIT),
@@ -479,7 +512,6 @@ def test_ctt_timestamp_treats_1900_01_01_as_absent():
     assert ctt_timestamp("2026-04-02T12:09:12Z") == "2026-04-02T12:09:12Z"
 
 
-
 # ---------------------------------------------------------------------------
 # build_history
 # ---------------------------------------------------------------------------
@@ -504,8 +536,7 @@ def test_build_history_does_not_deduplicate():
 
 def test_build_history_caps_to_max_events():
     events = [
-        event(f"2026-04-{day:02d}T10:00:00Z", 11, "Em trânsito")
-        for day in range(1, 26)
+        event(f"2026-04-{day:02d}T10:00:00Z", 11, "Em trânsito") for day in range(1, 26)
     ]
     assert len(build_history(events, max_events=20)) == 20
 
@@ -541,7 +572,14 @@ def test_build_history_keeps_unparseable_timestamp_last():
 
 def test_build_history_prefers_event_text_falls_back_to_state():
     history = build_history(
-        [event("2026-04-24T10:00:00Z", 12, "Entregue", event_text="O envio foi entregue.")]
+        [
+            event(
+                "2026-04-24T10:00:00Z",
+                12,
+                "Entregue",
+                event_text="O envio foi entregue.",
+            )
+        ]
     )
     assert history[0]["raw_status"] == "O envio foi entregue."
 
@@ -549,11 +587,9 @@ def test_build_history_prefers_event_text_falls_back_to_state():
     assert history[0]["raw_status"] == "Entregue"
 
 
-
 # ---------------------------------------------------------------------------
 # normalize_parcel — the canonical contract
 # ---------------------------------------------------------------------------
-
 
 
 def test_capabilities_never_claims_a_delivery_window_or_weight():
@@ -561,7 +597,6 @@ def test_capabilities_never_claims_a_delivery_window_or_weight():
     assert "delivery_window" not in CAPABILITIES_BY_VARIANT["CTT"]
     assert "weight" not in CAPABILITIES_BY_VARIANT["CTT"]
     assert "dimensions" not in CAPABILITIES_BY_VARIANT["CTT"]
-
 
 
 def test_normalize_delivered_parcel():
@@ -625,7 +660,8 @@ def test_normalize_on_hold_pickup_parcel_ends_up_awaiting_pickup():
     assert parcel["status"] == ParcelStatus.AT_PICKUP_POINT
     assert parcel["pickup"] is True
     on_hold_statuses = {
-        entry["status"] for entry in parcel["history"]
+        entry["status"]
+        for entry in parcel["history"]
         if entry["raw_status"] == "O envio encontra-se em espera."
     }
     assert on_hold_statuses == {ParcelStatus.IN_TRANSIT}

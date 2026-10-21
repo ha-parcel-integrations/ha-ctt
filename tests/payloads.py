@@ -10,6 +10,7 @@ Kept in one module rather than inline in each test — when the payload shape
 turns out to be different from what was assumed, there is exactly one place
 to fix it.
 """
+
 from __future__ import annotations
 
 DELIVERED_CODE = "DW100000001PT"
@@ -119,39 +120,63 @@ def delivered_sample(code: str = DELIVERED_CODE) -> dict:
     """
     events = [
         event(
-            "2026-04-02T12:09:12Z", 12, "Entregue",
+            "2026-04-02T12:09:12Z",
+            12,
+            "Entregue",
             event_text="O envio foi entregue. O processo de envio terminou.",
-            local="8819009 - (CO) C.O. PALMELA", progress=100,
+            local="8819009 - (CO) C.O. PALMELA",
+            progress=100,
         ),
         event(
-            "2026-04-02T09:31:09Z", 7, "Em entrega",
-            local="8819009 - (CO) C.O. PALMELA", progress=80,
+            "2026-04-02T09:31:09Z",
+            7,
+            "Em entrega",
+            local="8819009 - (CO) C.O. PALMELA",
+            progress=80,
         ),
         event(
-            "2026-04-01T12:22:30Z", 13, "Não entregue",
-            local="8819009 - (CO) C.O. PALMELA", progress=90,
+            "2026-04-01T12:22:30Z",
+            13,
+            "Não entregue",
+            local="8819009 - (CO) C.O. PALMELA",
+            progress=90,
             reason="O destinatário não atendeu.",
         ),
         event(
-            "2026-04-01T12:21:49Z", 13, "Não entregue",
-            local="8819009 - (CO) C.O. PALMELA", progress=90,
+            "2026-04-01T12:21:49Z",
+            13,
+            "Não entregue",
+            local="8819009 - (CO) C.O. PALMELA",
+            progress=90,
             reason="O destinatário não atendeu.",
         ),
         event(
-            "2026-04-01T09:45:43Z", 7, "Em entrega",
-            local="8819009 - (CO) C.O. PALMELA", progress=80,
+            "2026-04-01T09:45:43Z",
+            7,
+            "Em entrega",
+            local="8819009 - (CO) C.O. PALMELA",
+            progress=80,
         ),
         event(
-            "2026-04-01T04:13:56Z", 11, "Em trânsito",
-            local="8819009 - (CO) C.O. PALMELA", progress=50,
+            "2026-04-01T04:13:56Z",
+            11,
+            "Em trânsito",
+            local="8819009 - (CO) C.O. PALMELA",
+            progress=50,
         ),
         event(
-            "2026-03-31T19:16:48Z", 11, "Em trânsito",
-            local="PTMRLP - (CO) C.O. LOURES-MARL (OLX)", progress=50,
+            "2026-03-31T19:16:48Z",
+            11,
+            "Em trânsito",
+            local="PTMRLP - (CO) C.O. LOURES-MARL (OLX)",
+            progress=50,
         ),
         event(
-            "2026-03-31T18:50:13Z", 11, "Em trânsito",
-            local="Centro operacional Lisboa", progress=50,
+            "2026-03-31T18:50:13Z",
+            11,
+            "Em trânsito",
+            local="Centro operacional Lisboa",
+            progress=50,
         ),
         event("2026-03-31T18:50:12Z", 2, "Aceite", progress=3),
         event("2026-03-31T16:42:00Z", 1, "Aguarda entrada nos CTT", progress=0),
@@ -168,14 +193,24 @@ def active_sample(code: str = ACTIVE_CODE) -> dict:
     ``normalize_parcel`` untouched.
     """
     events = [
-        event("2026-05-02T09:31:09Z", 7, "Em entrega", local="Centro operacional Lisboa", progress=80),
-        event("2026-05-01T18:00:00Z", 11, "Em trânsito", local="Centro operacional Lisboa", progress=50),
+        event(
+            "2026-05-02T09:31:09Z",
+            7,
+            "Em entrega",
+            local="Centro operacional Lisboa",
+            progress=80,
+        ),
+        event(
+            "2026-05-01T18:00:00Z",
+            11,
+            "Em trânsito",
+            local="Centro operacional Lisboa",
+            progress=50,
+        ),
         event("2026-05-01T12:00:00Z", 2, "Aceite", progress=3),
         event("2026-05-01T08:00:00Z", 1, "Aguarda entrada nos CTT", progress=0),
     ]
-    return _object(
-        code, events, relabel_object_code="0010000000000000000000001"
-    )
+    return _object(code, events, relabel_object_code="0010000000000000000000001")
 
 
 def in_transit_sample(code: str = ACTIVE_CODE) -> dict:
@@ -194,12 +229,28 @@ def pickup_sample(code: str = PICKUP_CODE) -> dict:
     """
     events = [
         event(
-            "2026-06-11T10:00:00Z", 14, "No ponto de entrega",
-            local="Loja CTT Esgueira (Aveiro)", progress=90,
-            point_code="8810266", withdrawal_date="2026-06-12",
+            "2026-06-11T10:00:00Z",
+            14,
+            "No ponto de entrega",
+            local="Loja CTT Esgueira (Aveiro)",
+            progress=90,
+            point_code="8810266",
+            withdrawal_date="2026-06-12",
         ),
-        event("2026-06-11T08:00:00Z", 7, "Em entrega", local="8819009 - (CO) C.O. PALMELA", progress=80),
-        event("2026-06-10T12:00:00Z", 11, "Em trânsito", local="Centro operacional Lisboa", progress=50),
+        event(
+            "2026-06-11T08:00:00Z",
+            7,
+            "Em entrega",
+            local="8819009 - (CO) C.O. PALMELA",
+            progress=80,
+        ),
+        event(
+            "2026-06-10T12:00:00Z",
+            11,
+            "Em trânsito",
+            local="Centro operacional Lisboa",
+            progress=50,
+        ),
         event("2026-06-09T09:00:00Z", 1, "Aguarda entrada nos CTT", progress=0),
     ]
     return _object(code, events)
@@ -232,7 +283,10 @@ def derivation_counter_example_sample(code: str = DERIVATION_CODE) -> dict:
         event("2026-03-24T20:00:00Z", 11, "Em trânsito", progress=50),
         event("2026-03-25T09:00:00Z", 7, "Em entrega", progress=80),
         event(
-            "2026-03-25T12:00:00Z", 13, "Não entregue", progress=90,
+            "2026-03-25T12:00:00Z",
+            13,
+            "Não entregue",
+            progress=90,
             reason="O destinatário não atendeu.",
         ),
         event("2026-03-25T18:00:00Z", 11, "Em trânsito", progress=50),
@@ -251,38 +305,57 @@ def on_hold_pickup_sample(code: str = ON_HOLD_CODE) -> dict:
     """
     events = [
         event(
-            "2026-09-02T09:50:58Z", 14, "No ponto de entrega",
+            "2026-09-02T09:50:58Z",
+            14,
+            "No ponto de entrega",
             event_text="Chegou ao ponto de entrega.",
-            local="Centro operacional Coimbra", progress=90,
+            local="Centro operacional Coimbra",
+            progress=90,
         ),
         event(
-            "2026-09-02T08:47:58Z", 7, "Em entrega",
+            "2026-09-02T08:47:58Z",
+            7,
+            "Em entrega",
             event_text="O envio saiu para entrega. Será entregue durante o dia.",
-            local="Centro operacional Coimbra", progress=80,
+            local="Centro operacional Coimbra",
+            progress=80,
         ),
         event(
-            "2026-09-01T08:22:16Z", 8, "Em espera",
+            "2026-09-01T08:22:16Z",
+            8,
+            "Em espera",
             event_text="O envio encontra-se em espera.",
-            local="Centro operacional Coimbra", progress=50,
+            local="Centro operacional Coimbra",
+            progress=50,
             reason="Estamos a averiguar a morada junto do cliente.",
         ),
         event(
-            "2026-09-01T08:22:15Z", 11, "Em trânsito",
+            "2026-09-01T08:22:15Z",
+            11,
+            "Em trânsito",
             event_text="Chegou ao centro operacional",
-            local="Centro operacional Coimbra", progress=50,
+            local="Centro operacional Coimbra",
+            progress=50,
         ),
         event(
-            "2026-08-31T16:30:53Z", 11, "Em trânsito",
+            "2026-08-31T16:30:53Z",
+            11,
+            "Em trânsito",
             event_text="Chegou ao centro operacional",
-            local="8811582 - (CDP) 2350 - Cld 2350 Torres Novas 2350", progress=50,
+            local="8811582 - (CDP) 2350 - Cld 2350 Torres Novas 2350",
+            progress=50,
         ),
         event(
-            "2026-08-31T16:30:49Z", 2, "Aceite",
+            "2026-08-31T16:30:49Z",
+            2,
+            "Aceite",
             event_text="O envio foi aceite. O processo de envio foi iniciado.",
             progress=3,
         ),
         event(
-            "2026-08-31T14:22:33Z", 1, "Aguarda entrada nos CTT",
+            "2026-08-31T14:22:33Z",
+            1,
+            "Aguarda entrada nos CTT",
             event_text="A informação sobre o envio foi recebida.",
             progress=0,
         ),
@@ -299,42 +372,59 @@ def returned_sample(code: str = RETURNED_CODE) -> dict:
     """
     events = [
         event(
-            "2026-08-31T10:47:21Z", 5, "Devolvido",
+            "2026-08-31T10:47:21Z",
+            5,
+            "Devolvido",
             event_text="O envio foi entregue ao remetente. Processo de devolução terminado.",
-            local="Centro operacional Lisboa", progress=100,
+            local="Centro operacional Lisboa",
+            progress=100,
         ),
         event(
-            "2026-08-31T09:37:28Z", 7, "Em entrega",
+            "2026-08-31T09:37:28Z",
+            7,
+            "Em entrega",
             event_text="O envio saiu para entrega. Será entregue durante o dia.",
-            local="Centro operacional Lisboa", progress=80,
+            local="Centro operacional Lisboa",
+            progress=80,
         ),
         event(
-            "2026-08-27T15:06:32Z", 13, "Não entregue",
+            "2026-08-27T15:06:32Z",
+            13,
+            "Não entregue",
             event_text="A entrega do envio não foi conseguida.",
-            local="006027 - (PL) CO MAIA", progress=90,
+            local="006027 - (PL) CO MAIA",
+            progress=90,
             reason="O envio não foi levantado.",
         ),
         event(
-            "2026-08-26T21:08:53Z", 13, "Não entregue",
+            "2026-08-26T21:08:53Z",
+            13,
+            "Não entregue",
             event_text="A entrega do envio não foi conseguida.",
-            local="006027 - (PL) CO MAIA", progress=90,
+            local="006027 - (PL) CO MAIA",
+            progress=90,
             reason="O destinatário não atendeu.",
         ),
         event(
-            "2026-08-20T08:32:28Z", 7, "Em entrega",
+            "2026-08-20T08:32:28Z",
+            7,
+            "Em entrega",
             event_text="O envio saiu para entrega. Será entregue durante o dia.",
-            local="006027 - (PL) CO MAIA", progress=80,
+            local="006027 - (PL) CO MAIA",
+            progress=80,
         ),
         event(
-            "2026-08-16T16:41:00Z", 1, "Aguarda entrada nos CTT",
+            "2026-08-16T16:41:00Z",
+            1,
+            "Aguarda entrada nos CTT",
             event_text="A informação sobre o envio foi recebida.",
         ),
         event(
-            "2026-08-14T19:55:12Z", 2, "Aceite",
+            "2026-08-14T19:55:12Z",
+            2,
+            "Aceite",
             event_text="O envio foi aceite. O processo de envio foi iniciado.",
             progress=3,
         ),
     ]
-    return _object(
-        code, events, relabel_object_code="0010000000000000000000002"
-    )
+    return _object(code, events, relabel_object_code="0010000000000000000000002")

@@ -4,6 +4,7 @@ All-digit codes go to the CTT Express tracker (:mod:`.express`), everything
 else to ctt.pt (:mod:`.ctt`). Routing on the code's shape rather than a setting
 lets one config entry hold parcels from both.
 """
+
 from __future__ import annotations
 
 from typing import Any

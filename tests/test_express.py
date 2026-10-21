@@ -4,6 +4,7 @@ The two traps this tracker sets: a not-found is an empty ``200`` body rather
 than an error object, and ``MANAGEMENTS`` events sit between ``STATUS`` events
 without ever being the parcel state.
 """
+
 import json
 import logging
 from unittest.mock import AsyncMock, MagicMock
@@ -68,7 +69,7 @@ def _client(response) -> tuple[CTTExpressClient, MagicMock]:
 
 
 @pytest.mark.parametrize(
-    "code,expected",
+    ("code", "expected"),
     [
         (EXPRESS_CODE, True),
         (EXPRESS_CODE_25, True),
@@ -159,7 +160,7 @@ async def test_client_lets_transport_errors_through():
 
 
 @pytest.mark.parametrize(
-    "code,expected",
+    ("code", "expected"),
     [
         ("0000", ParcelStatus.REGISTERED),
         ("0500", ParcelStatus.IN_TRANSIT),
@@ -223,7 +224,9 @@ def test_normalize_does_not_trust_server_order():
     oldest_first = delivered_history()
     newest_first = dict(oldest_first, events=list(reversed(oldest_first["events"])))
 
-    expected = normalize_express_parcel(EXPRESS_CODE, oldest_first, include_history=True)
+    expected = normalize_express_parcel(
+        EXPRESS_CODE, oldest_first, include_history=True
+    )
     actual = normalize_express_parcel(EXPRESS_CODE, newest_first, include_history=True)
     for key in ("status", "raw_status", "delivered_at", "planned_from", "history"):
         assert actual[key] == expected[key], key
@@ -303,9 +306,7 @@ def test_normalize_unusable_delivery_date_gives_no_window(value):
 @pytest.mark.parametrize("final_code", ["2100", "2500"])
 def test_normalize_terminal_parcel_drops_the_window(final_code):
     raw = rescheduled_history()
-    raw["events"].append(
-        status_event("2026-11-03T12:00:00+01:00", final_code, "Final")
-    )
+    raw["events"].append(status_event("2026-11-03T12:00:00+01:00", final_code, "Final"))
     assert normalize_express_parcel(EXPRESS_CODE, raw)["planned_from"] is None
 
 
@@ -320,7 +321,9 @@ def test_normalize_placeholder_for_not_found():
 
 
 def test_normalize_history_is_opt_in_and_status_only():
-    assert normalize_express_parcel(EXPRESS_CODE, delivered_history())["history"] is None
+    assert (
+        normalize_express_parcel(EXPRESS_CODE, delivered_history())["history"] is None
+    )
 
     history = normalize_express_parcel(
         EXPRESS_CODE, delivered_history(), include_history=True

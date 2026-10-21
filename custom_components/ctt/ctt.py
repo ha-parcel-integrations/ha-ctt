@@ -28,11 +28,12 @@ not-found, and raises :class:`CTTApiError` for anything else — including an
 outage, so the coordinator surfaces ``UpdateFailed`` instead of quietly
 reporting every parcel as unknown.
 """
+
 from __future__ import annotations
 
+from datetime import datetime
 import logging
 import re
-from datetime import datetime
 from typing import Any
 from urllib.parse import unquote
 
@@ -57,8 +58,12 @@ TRACK_ACTION = "DataActionGetObjectEventsByInputObjectCode"
 MAINTENANCE_ACTION = "DataActionCheckIPLocked"
 
 MODULE_VERSION_URL = f"{BASE_URL}/CustomerArea/moduleservices/moduleversioninfo"
-MODULE_INFO_URL_TEMPLATE = f"{BASE_URL}/CustomerArea/moduleservices/moduleinfo?{{token}}"
-SCREEN_SCRIPT_PATH = "/CustomerArea/scripts/CustomerArea.CustomerArea.PublicArea_Detail.mvc.js"
+MODULE_INFO_URL_TEMPLATE = (
+    f"{BASE_URL}/CustomerArea/moduleservices/moduleinfo?{{token}}"
+)
+SCREEN_SCRIPT_PATH = (
+    "/CustomerArea/scripts/CustomerArea.CustomerArea.PublicArea_Detail.mvc.js"
+)
 
 _COMMON_HEADERS = {"User-Agent": BROWSER_USER_AGENT}
 
@@ -66,7 +71,9 @@ _COMMON_HEADERS = {"User-Agent": BROWSER_USER_AGENT}
 def _api_version_pattern(action_name: str) -> re.Pattern[str]:
     """Match ``controller.callDataAction("<action>", "<path>", "<apiVersion>"``."""
     return re.compile(
-        r'callDataAction\(\s*"' + re.escape(action_name) + r'"\s*,\s*"[^"]*"\s*,\s*"([^"]+)"'
+        r'callDataAction\(\s*"'
+        + re.escape(action_name)
+        + r'"\s*,\s*"[^"]*"\s*,\s*"([^"]+)"'
     )
 
 
@@ -102,15 +109,15 @@ def _parse_nr2_users_cookie(raw_value: str) -> dict[str, str]:
 # to `returning` — the suite convention collapses both an in-progress and a
 # completed return into that one member.
 _STATUS_MAP: dict[int, ParcelStatus] = {
-    1: ParcelStatus.REGISTERED,        # Aguarda entrada nos CTT
-    2: ParcelStatus.IN_TRANSIT,        # Aceite - handed over, in the network
-    5: ParcelStatus.RETURNING,         # Devolvido - delivered back to sender
+    1: ParcelStatus.REGISTERED,  # Aguarda entrada nos CTT
+    2: ParcelStatus.IN_TRANSIT,  # Aceite - handed over, in the network
+    5: ParcelStatus.RETURNING,  # Devolvido - delivered back to sender
     7: ParcelStatus.OUT_FOR_DELIVERY,  # Em entrega
-    8: ParcelStatus.IN_TRANSIT,        # Em espera - on hold, resumes on its own
-    10: ParcelStatus.IN_TRANSIT,       # Em importação
-    11: ParcelStatus.IN_TRANSIT,       # Em trânsito
-    12: ParcelStatus.DELIVERED,        # Entregue
-    13: ParcelStatus.PROBLEM,          # Não entregue - failed delivery attempt
+    8: ParcelStatus.IN_TRANSIT,  # Em espera - on hold, resumes on its own
+    10: ParcelStatus.IN_TRANSIT,  # Em importação
+    11: ParcelStatus.IN_TRANSIT,  # Em trânsito
+    12: ParcelStatus.DELIVERED,  # Entregue
+    13: ParcelStatus.PROBLEM,  # Não entregue - failed delivery attempt
     14: ParcelStatus.AT_PICKUP_POINT,  # No ponto de entrega
 }
 
@@ -300,8 +307,6 @@ def normalize_ctt_parcel(raw: dict, *, include_history: bool = False) -> dict:
     }
 
 
-
-
 class CTTClient:
     """Client for CTT's keyless, session-bootstrapped public tracker.
 
@@ -398,9 +403,7 @@ class CTTClient:
                         retry_session=False,
                         retry_version=retry_version,
                     )
-                raise CTTApiError(
-                    "anonymous session bootstrap failed", status_code=403
-                )
+                raise CTTApiError("anonymous session bootstrap failed", status_code=403)
             if response.status != 200:
                 raise CTTApiError(
                     f"HTTP {response.status}", status_code=response.status
@@ -492,7 +495,9 @@ class CTTClient:
         url_versions = ((manifest or {}).get("manifest") or {}).get("urlVersions") or {}
         script_token = url_versions.get(SCREEN_SCRIPT_PATH)
         if not script_token:
-            raise CTTApiError("module manifest missing the screen script's version token")
+            raise CTTApiError(
+                "module manifest missing the screen script's version token"
+            )
         script_url = f"{BASE_URL}{SCREEN_SCRIPT_PATH}?{script_token}"
         async with self._session.get(script_url, headers=_COMMON_HEADERS) as response:
             if response.status != 200:

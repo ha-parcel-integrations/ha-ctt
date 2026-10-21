@@ -4,6 +4,7 @@ Codes, texts and locations are made up; only the envelope shape is real.
 ``events`` is a list, oldest first, with ``STATUS`` events carrying the parcel
 state and ``MANAGEMENTS`` events recording delivery-management actions.
 """
+
 from __future__ import annotations
 
 from typing import Any
