@@ -128,6 +128,7 @@ Standard HA removal applies: **Settings → Devices & Services → CTT (Express)
 | `sensor.ctt_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.ctt_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
 | `sensor.ctt_next_delivery` | Earliest expected delivery moment across active parcels when the selected tracker provides one |
+| `sensor.ctt_en_route_to_pickup_point` | Incoming parcels on their way to a pickup point that have not arrived yet |
 | `sensor.ctt_awaiting_pickup` | Incoming parcels that are ready to collect at a pickup point |
 | `sensor.ctt_delivered_parcels` | Recently delivered parcels (see the retention option) |
 | `calendar.ctt_deliveries` | Read-only calendar of expected deliveries, no extra API calls |
