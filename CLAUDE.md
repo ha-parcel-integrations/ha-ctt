@@ -40,14 +40,18 @@ This repo follows it exactly.
   summary+diagnostic sensors. Add a new non-parcel sensor's unique_id to the set.
 - **Per-parcel sensors are removed by the summary sensor** via
   `entity_registry.async_remove` (self-removal races and leaves ghosts).
-- **If this carrier can reach `ParcelStatus.AT_PICKUP_POINT` from a real raw
-  status/code**, it needs an `awaiting_pickup` sensor — see *Parcel contract*
-  in `CONVENTIONS.md`. Say "pickup point", not "ServicePoint"/"parcel
-  shop"/"locker", for the generic concept. `ha-dhl-nl`, `ha-dpd`, `ha-gls`,
-  `ha-inpost` are reference implementations; CTT's own `StateId 14` ("No
-  ponto de entrega") reaches `AT_PICKUP_POINT`, so `sensor.py` ships both
-  `awaiting_pickup` and `en_route_to_pickup_point` (added 2026-09-06, gap
-  from the original build — see `tests/payloads.py::on_hold_pickup_sample`).
+- **The pickup-point summaries are a pair.** A carrier that can deliver to a
+  pickup point or locker exposes both `en_route_to_pickup_point` and
+  `awaiting_pickup`, even before a real parcel has shown the status or flag
+  (they read 0 until then; record it in `PENDING_*`). A carrier without pickup
+  points exposes neither and keeps `pickup` constantly False.
+  See *Parcel contract* in `CONVENTIONS.md`. Say "pickup point", not
+  "ServicePoint"/"parcel shop"/"locker", for the generic concept; the
+  example carrier demonstrates both canonical sensors.
+  CTT's own `StateId 14` ("No ponto de entrega") reaches `AT_PICKUP_POINT`, so
+  `sensor.py` ships both `awaiting_pickup` and `en_route_to_pickup_point`
+  (added 2026-09-06, gap from the original build — see
+  `tests/payloads.py::on_hold_pickup_sample`).
 
 ## Carrier-specific notes
 
@@ -62,8 +66,10 @@ normaliser, and never adds CTT's `ObjectCode` to a CTT Express record.
 **CTT Express specifics.** Not-found is an empty `200` body, so the client
 reads text and parses it itself. `events` is a list; the state is the newest
 `STATUS` event by `event_date` (sorted, never trusted in server order) and
-`MANAGEMENTS` events never set it — they only feed `planned_from`, from the
-newest revised delivery date, while the parcel is not delivered or returning.
+`MANAGEMENTS` events never set it — they only feed the delivery window: the
+newest revised delivery date is a date without a time, so it covers that whole
+Madrid day (`00:00:00`–`23:59:59`), and the window is emptied at pickup point,
+returning and delivered. A return in progress (`2500`) is not `delivered`.
 `barcode` is the configured code, never the tracker's own `item_code`.
 
 The rest of this section is about the CTT Portugal backend.
@@ -95,7 +101,15 @@ it already proves the backend is up. Do not "simplify" this by trusting
 for this — it went out for delivery, failed once, and returned to
 `in_transit`; a highest-rank rule would report `problem`.
 
-**Fields that are `None` on purpose.** `planned_from`/`planned_to`,
+**Pickup and returns.** `pickup` is `True` once any event reached the
+pickup point (StateId 14 here, `2310` on Express) and stays `True` after
+collection; `pickup_point` is the newest such event's place name, whenever
+`pickup`. CTT Portugal StateId 5 (`Devolvido`, "delivered to the sender") maps
+to `returning` and counts as `delivered`, with `delivered_at` from that event;
+this is the only `returning` that is `delivered`. Delivered and returning
+parcels never sit in `en_route_to_pickup_point`.
+
+**Fields that are `None` on purpose.** CTT Portugal's `planned_from`/`planned_to`,
 `weight` and `dimensions` are always `None` — no observed parcel (four real
 ones, 2026-09-06) populates `DeliveryDeadlineEnd`, `DeliveryTimeSlot` or any
 weight/dimension field for an anonymous caller. `CAPABILITIES_BY_VARIANT["CTT"]`

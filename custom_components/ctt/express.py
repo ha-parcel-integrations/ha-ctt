@@ -13,7 +13,7 @@ else.
 
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import datetime
 import json
 import logging
 from typing import Any
@@ -29,12 +29,18 @@ from .const import (
     CTTApiError,
     ParcelStatus,
 )
-from .parcels import NEW_ISSUE_URL, parse_iso
+from .parcels import (
+    NEW_ISSUE_URL,
+    is_pickup,
+    parse_iso,
+    planned_for_status,
+    planned_window,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-# ``planned_from`` is a date without a time; anchor it to the carrier's own
-# midnight rather than UTC so it lands on the right calendar day.
+# The revised delivery date has no time; it is dated in the carrier's own zone
+# rather than UTC so it lands on the right calendar day.
 _EXPRESS_TZ = ZoneInfo("Europe/Madrid")
 
 # Keyed on the ``STATUS`` event code — the label is display text. 1700
@@ -163,20 +169,15 @@ def _ordered_events(raw: dict) -> list[dict]:
     return [event for _, event in dated] + undated
 
 
-def _planned_from(events: list[dict]) -> str | None:
-    """Return the newest ``71_INAT`` revised delivery date as local midnight."""
+def _planned_date(events: list[dict]) -> str | None:
+    """Return the newest ``71_INAT`` revised delivery date as ``YYYY-MM-DD``."""
     for event in reversed(events):
         if event.get("code") != "71_INAT":
             continue
         detail = event.get("detail")
         value = detail.get("delivery_date") if isinstance(detail, dict) else None
-        if not isinstance(value, str):
-            continue
-        try:
-            day = date.fromisoformat(value)
-        except ValueError:
-            return None
-        return datetime.combine(day, time(0), _EXPRESS_TZ).isoformat()
+        if isinstance(value, str):
+            return value
     return None
 
 
@@ -199,16 +200,29 @@ def normalize_express_parcel(
     ) or ParcelStatus.UNKNOWN
     delivered = status is ParcelStatus.DELIVERED
 
+    pickup = is_pickup(
+        None,
+        status,
+        (EXPRESS_STATUS_MAP.get(event.get("code")) for event in status_events),
+    )
     pickup_point = None
-    if status is ParcelStatus.AT_PICKUP_POINT and newest is not None:
-        detail = newest.get("detail")
-        location = detail.get("delivery_location") if isinstance(detail, dict) else None
-        if isinstance(location, str) and location.strip():
-            pickup_point = location
+    if pickup:
+        for event in reversed(status_events):
+            if EXPRESS_STATUS_MAP.get(event.get("code")) is not (
+                ParcelStatus.AT_PICKUP_POINT
+            ):
+                continue
+            detail = event.get("detail")
+            location = (
+                detail.get("delivery_location") if isinstance(detail, dict) else None
+            )
+            if isinstance(location, str) and location.strip():
+                pickup_point = location
+            break
 
-    planned_from = None
-    if status not in (ParcelStatus.DELIVERED, ParcelStatus.RETURNING):
-        planned_from = _planned_from(events)
+    planned_from, planned_to = planned_for_status(
+        status, *planned_window(_planned_date(events), None, zone=_EXPRESS_TZ)
+    )
 
     history = None
     if include_history:
@@ -231,8 +245,8 @@ def normalize_express_parcel(
         "delivered": delivered,
         "delivered_at": newest.get("event_date") if delivered and newest else None,
         "planned_from": planned_from,
-        "planned_to": None,
-        "pickup": status is ParcelStatus.AT_PICKUP_POINT,
+        "planned_to": planned_to,
+        "pickup": pickup,
         "pickup_point": pickup_point,
         "url": EXPRESS_TRACKING_URL.format(tracking_code=tracking_code),
         # Declared weight and measures carry no unit, so they stay unclaimed.

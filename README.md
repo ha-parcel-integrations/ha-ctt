@@ -147,11 +147,11 @@ The `status` field is the carrier-agnostic enum shared by the whole integration 
 | `out_for_delivery` | With the courier today (`Em entrega`) |
 | `at_pickup_point` | Waiting for you at a CTT shop (`No ponto de entrega`) |
 | `delivered` | Delivered (`Entregue`) |
+| `returning` | Sent back to the sender (`Devolvido`); once CTT reports it as handed back, the parcel counts as delivered and moves to the delivered sensor |
 | `problem` | A failed delivery attempt (`Não entregue`) |
 | `unknown` | Not yet scanned, or a status CTT reports that this integration does not map yet |
 
-`returning` is part of the shared enum but CTT has no confirmed `StateId` for
-a return, a cancellation or a locker delivery yet (nine further status
+CTT has no confirmed `StateId` for a cancellation or a locker delivery yet (six further status
 literals are known to exist but have never been observed
 on a real parcel) — they arrive as `unknown` with a one-shot log line asking you
 to report it, rather than being guessed at.

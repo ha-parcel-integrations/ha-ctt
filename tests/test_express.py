@@ -271,11 +271,11 @@ def test_normalize_unsettled_code_is_unknown_and_warns_once(caplog):
     assert "issues/new" in warnings[0].getMessage()
 
 
-def test_normalize_planned_from_is_madrid_midnight_on_an_active_parcel():
+def test_normalize_delivery_date_covers_the_madrid_day_on_an_active_parcel():
     parcel = normalize_express_parcel(EXPRESS_CODE, rescheduled_history())
     assert parcel["status"] is ParcelStatus.PROBLEM
     assert parcel["planned_from"] == "2026-11-03T00:00:00+01:00"
-    assert parcel["planned_to"] is None
+    assert parcel["planned_to"] == "2026-11-03T23:59:59+01:00"
 
 
 def test_normalize_planned_from_takes_the_newest_revision():
@@ -303,7 +303,7 @@ def test_normalize_unusable_delivery_date_gives_no_window(value):
     assert normalize_express_parcel(EXPRESS_CODE, raw)["planned_from"] is None
 
 
-@pytest.mark.parametrize("final_code", ["2100", "2500"])
+@pytest.mark.parametrize("final_code", ["2100", "2500", "2310"])
 def test_normalize_terminal_parcel_drops_the_window(final_code):
     raw = rescheduled_history()
     raw["events"].append(status_event("2026-11-03T12:00:00+01:00", final_code, "Final"))

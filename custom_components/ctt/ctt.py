@@ -46,7 +46,7 @@ from .const import (
     CTTApiError,
     ParcelStatus,
 )
-from .parcels import NEW_ISSUE_URL, parse_iso, to_iso_timestamp
+from .parcels import NEW_ISSUE_URL, is_pickup, parse_iso, to_iso_timestamp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -243,8 +243,8 @@ def _newest_event_with_state_id(events: list[dict], state_id: int) -> dict | Non
     """Return the newest event with the given ``StateId``, or ``None``.
 
     ``events`` is newest-first, so the first match already is the newest one
-    — used for ``delivered_at`` (StateId 12) and ``pickup_point`` (StateId
-    14), both of which must come from the *event*, never a top-level flag.
+    — used for ``delivered_at`` (StateId 12, or 5 for a return) and
+    ``pickup_point`` (StateId 14), both of which must come from the *event*, never a top-level flag.
     """
     for event in events:
         if event.get("StateId") == state_id:
@@ -270,16 +270,22 @@ def normalize_ctt_parcel(raw: dict, *, include_history: bool = False) -> dict:
     newest = events[0] if events else None
     state_id = newest.get("StateId") if newest else None
     status = map_parcel_status(state_id)
-    delivered = status is ParcelStatus.DELIVERED
+    # StateId 5 is the one return state and means the sender has the parcel back.
+    delivered = status in (ParcelStatus.DELIVERED, ParcelStatus.RETURNING)
 
     delivered_at = None
     if delivered:
-        delivered_event = _newest_event_with_state_id(events, 12)
-        if delivered_event is not None:
-            delivered_at = ctt_timestamp(delivered_event.get("DateTime"))
+        end_event = _newest_event_with_state_id(
+            events, 12 if status is ParcelStatus.DELIVERED else 5
+        )
+        if end_event is not None:
+            delivered_at = ctt_timestamp(end_event.get("DateTime"))
 
+    pickup = is_pickup(
+        None, status, (_STATUS_MAP.get(event.get("StateId")) for event in events)
+    )
     pickup_point = None
-    if status is ParcelStatus.AT_PICKUP_POINT:
+    if pickup:
         pickup_event = _newest_event_with_state_id(events, 14)
         if pickup_event is not None:
             pickup_point = pickup_event.get("Local") or None
@@ -297,7 +303,7 @@ def normalize_ctt_parcel(raw: dict, *, include_history: bool = False) -> dict:
         "delivered_at": delivered_at,
         "planned_from": None,
         "planned_to": None,
-        "pickup": status is ParcelStatus.AT_PICKUP_POINT,
+        "pickup": pickup,
         "pickup_point": pickup_point,
         "url": tracking_url(tracking_code),
         "weight": None,

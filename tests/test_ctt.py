@@ -673,7 +673,9 @@ def test_normalize_returned_parcel_is_returning():
     parcel = normalize_ctt_parcel(returned_sample())
     assert parcel["status"] == ParcelStatus.RETURNING
     assert parcel["raw_status"] == "Devolvido"
-    assert parcel["delivered"] is False
+    assert parcel["delivered"] is True
+    assert parcel["delivered_at"] == "2026-08-31T10:47:21Z"
+    assert parcel["planned_from"] is None
 
 
 def test_normalize_pickup_parcel():
