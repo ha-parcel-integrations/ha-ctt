@@ -282,7 +282,9 @@ def normalize_ctt_parcel(raw: dict, *, include_history: bool = False) -> dict:
             delivered_at = ctt_timestamp(end_event.get("DateTime"))
 
     pickup = is_pickup(
-        None, status, (_STATUS_MAP.get(event.get("StateId")) for event in events)
+        None,
+        status,
+        (_STATUS_MAP.get(event.get("StateId", -1)) for event in events),
     )
     pickup_point = None
     if pickup:

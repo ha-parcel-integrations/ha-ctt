@@ -203,12 +203,12 @@ def normalize_express_parcel(
     pickup = is_pickup(
         None,
         status,
-        (EXPRESS_STATUS_MAP.get(event.get("code")) for event in status_events),
+        (EXPRESS_STATUS_MAP.get(str(event.get("code"))) for event in status_events),
     )
     pickup_point = None
     if pickup:
         for event in reversed(status_events):
-            if EXPRESS_STATUS_MAP.get(event.get("code")) is not (
+            if EXPRESS_STATUS_MAP.get(str(event.get("code"))) is not (
                 ParcelStatus.AT_PICKUP_POINT
             ):
                 continue
