@@ -88,6 +88,10 @@
         "tracking_code": {
           "name": "Código de seguimiento",
           "description": "El código de seguimiento de CTT."
+        },
+        "contents": {
+          "name": "Contenido",
+          "description": "Lo que hay en el paquete, con tus propias palabras. Si vuelves a llamar a esta acción para un paquete en seguimiento, lo sustituye; un texto vacío lo borra."
         }
       }
     },
@@ -98,6 +102,20 @@
         "tracking_code": {
           "name": "Código de seguimiento",
           "description": "El código de seguimiento de CTT que se deja de seguir."
+        }
+      }
+    },
+    "update_contents": {
+      "name": "Actualizar el contenido del paquete",
+      "description": "Indica lo que hay en un paquete, con tus propias palabras, para un código de seguimiento. Un texto vacío borra el contenido.",
+      "fields": {
+        "tracking_code": {
+          "name": "Código de seguimiento",
+          "description": "El código de seguimiento de CTT."
+        },
+        "contents": {
+          "name": "Contenido",
+          "description": "Lo que hay en el paquete, con tus propias palabras. Un texto vacío lo borra."
         }
       }
     }

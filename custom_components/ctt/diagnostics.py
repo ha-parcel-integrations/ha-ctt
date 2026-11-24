@@ -22,6 +22,7 @@ TO_REDACT = {
     "barcode",
     "sender",
     "receiver",
+    "contents",
     "url",
     # CTT payload fields
     "ObjectCode",

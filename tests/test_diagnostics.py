@@ -17,6 +17,7 @@ async def test_diagnostics_redacts_and_counts(hass):
             "barcode": "RR999999999PT",
             "sender": "Loja Exemplo",
             "receiver": "Cliente Exemplo",
+            "contents": "Running shoes",
             "status": "out_for_delivery",
             "raw": {
                 "ObjectCode": "RR999999999PT",
@@ -40,6 +41,7 @@ async def test_diagnostics_redacts_and_counts(hass):
     assert result["entry_options"]["parcels"][0]["tracking_code"] == "**REDACTED**"
     assert result["incoming"][0]["barcode"] == "**REDACTED**"
     assert result["incoming"][0]["receiver"] == "**REDACTED**"
+    assert result["incoming"][0]["contents"] == "**REDACTED**"
     assert result["incoming"][0]["raw"]["Recipient"] == "**REDACTED**"
     assert result["incoming"][0]["raw"]["RecipientAddress"] == "**REDACTED**"
     assert (

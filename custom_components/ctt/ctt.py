@@ -297,6 +297,7 @@ def normalize_ctt_parcel(raw: dict, *, include_history: bool = False) -> dict:
         "barcode": tracking_code,
         "sender": raw.get("Sender") or None,
         "receiver": raw.get("Recipient") or None,
+        "contents": None,
         "status": status,
         "raw_status": newest.get("State") if newest else None,
         "delivered": delivered,

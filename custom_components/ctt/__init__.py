@@ -11,6 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import CTTApiClient
 from .const import PLATFORMS
+from .contents import ContentsStore
 from .coordinator import CTTCoordinator
 from .services import async_setup_services, async_unload_services
 
@@ -33,6 +34,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: CTTConfigEntry) -> bool:
     # No auth: CTT tracking is public, so the HA-managed session is fine.
     client = CTTApiClient(async_get_clientsession(hass))
     coordinator = CTTCoordinator(hass, client, entry)
+
+    await coordinator.contents_store.async_load()
 
     # Fetch initial data here, before forwarding to platforms. Raising
     # ConfigEntryNotReady from a forwarded platform is too late for HA to catch
@@ -71,3 +74,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: CTTConfigEntry) -> bool
     # always go when the entry unloads.
     async_unload_services(hass)
     return True
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: CTTConfigEntry) -> None:
+    """Delete the contents the user set for the removed entry."""
+    await ContentsStore(hass, entry.entry_id).async_remove()

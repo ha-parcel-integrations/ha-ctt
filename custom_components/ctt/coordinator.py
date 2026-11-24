@@ -34,6 +34,7 @@ from .const import (
     STAGGER_MINUTES,
     ParcelStatus,
 )
+from .contents import ContentsStore
 from .ctt import normalize_ctt_parcel
 from .express import is_express_code, normalize_express_parcel
 from .parcels import apply_delivered_filter, sort_parcels_by_ts
@@ -152,6 +153,7 @@ class CTTCoordinator(DataUpdateCoordinator[list[dict]]):
             update_interval=timedelta(minutes=HOT_INTERVAL_MINUTES),
         )
         self._client = client
+        self.contents_store = ContentsStore(hass, entry.entry_id)
         self.delivered: list[dict] = []
         # tracking_code -> last successful raw payload, so a transient fetch
         # failure or a not-found blip keeps the parcel visible instead of
@@ -178,6 +180,24 @@ class CTTCoordinator(DataUpdateCoordinator[list[dict]]):
         self._cached_device_id: str | None = None
         # Timestamp of the last successful poll (diagnostic sensor).
         self.last_success_time: datetime | None = None
+
+    def _apply_contents(self, parcel: dict, code: object) -> dict:
+        """Put the user's own contents text over the carrier's, when there is one."""
+        user_value = self.contents_store.get(code)
+        if user_value is not None:
+            parcel["contents"] = user_value
+        return parcel
+
+    async def async_reapply_contents(self) -> None:
+        """Re-overlay the stored contents on the parcels already held.
+
+        A contents change must not cost a carrier request, so it works on the
+        published lists instead of refreshing.
+        """
+        for parcel in [*(self.data or []), *self.delivered]:
+            parcel["contents"] = None
+            self._apply_contents(parcel, parcel.get("barcode"))
+        self.async_update_listeners()
 
     @property
     def current_tier_minutes(self) -> int | None:
@@ -300,12 +320,14 @@ class CTTCoordinator(DataUpdateCoordinator[list[dict]]):
             raise UpdateFailed("CTT unreachable for all tracked parcels")
 
         include_history = self._include_history
-        normalized = [
-            normalize_express_parcel(code, raw, include_history=include_history)
-            if is_express_code(code)
-            else normalize_ctt_parcel(raw, include_history=include_history)
-            for code, raw in raws
-        ]
+        normalized = []
+        for code, raw in raws:
+            parcel = (
+                normalize_express_parcel(code, raw, include_history=include_history)
+                if is_express_code(code)
+                else normalize_ctt_parcel(raw, include_history=include_history)
+            )
+            normalized.append(self._apply_contents(parcel, parcel["barcode"] or code))
         active = [parcel for parcel in normalized if not parcel["delivered"]]
         delivered = [parcel for parcel in normalized if parcel["delivered"]]
 

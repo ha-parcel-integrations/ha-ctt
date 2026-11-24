@@ -5,11 +5,29 @@ track_parcel:
       example: "RR123456785PT"
       selector:
         text:
+    contents:
+      required: false
+      example: "Running shoes"
+      selector:
+        text:
 
 untrack_parcel:
   fields:
     tracking_code:
       required: true
       example: "RR123456785PT"
+      selector:
+        text:
+
+update_contents:
+  fields:
+    tracking_code:
+      required: true
+      example: "RR123456785PT"
+      selector:
+        text:
+    contents:
+      required: false
+      example: "Running shoes"
       selector:
         text:

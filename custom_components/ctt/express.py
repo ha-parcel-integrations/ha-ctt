@@ -240,6 +240,7 @@ def normalize_express_parcel(
         "barcode": tracking_code,
         "sender": None,
         "receiver": None,
+        "contents": None,
         "status": status,
         "raw_status": newest.get("description") if newest else None,
         "delivered": delivered,
